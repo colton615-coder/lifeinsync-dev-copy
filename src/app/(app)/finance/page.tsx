@@ -207,7 +207,7 @@ export default function FinancePage() {
             <CardTitle>Budget Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <Progress value={progress} className="h-4" indicatorClassName="bg-accent" />
+            <Progress value={progress} indicatorClassName="bg-accent" />
           </CardContent>
         </Card>
         
