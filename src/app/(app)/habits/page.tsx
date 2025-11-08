@@ -1,16 +1,20 @@
 'use client';
-import { useState } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useState, useEffect, useTransition } from 'react';
 import {
-  addDocumentNonBlocking,
-  updateDocumentNonBlocking,
+  useUser,
+  useFirestore,
+  useCollection,
+  useMemoFirebase,
+  setDocumentNonBlocking,
   deleteDocumentNonBlocking,
-} from '@/firebase/non-blocking-updates';
-import { collection, doc, serverTimestamp } from 'firebase/firestore';
+} from '@/firebase';
+import { collection, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { format, isToday } from 'date-fns';
+import { getHabitFeedback } from './actions';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Flame, Target, PlusCircle, Trash2, Loader2 } from 'lucide-react';
+import { Flame, Target, PlusCircle, Trash2, Loader2, BrainCircuit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,11 +30,23 @@ import { Label } from '@/components/ui/label';
 
 // Matches the Habit entity, but 'id' will be added by the useCollection hook
 type Habit = {
+  id: string;
   name: string;
-  done: boolean;
-  streak: number;
   createdAt: any; // Firestore Timestamp
   userProfileId: string;
+  // Last completion date to check for streaks
+  lastCompleted?: any; // Firestore Timestamp
+  streak: number;
+};
+
+type HabitCompletionLog = {
+  [date: string]: boolean;
+};
+
+// Represents the daily log document for all habits
+type DailyLog = {
+  id?: string; // Will be 'completions'
+  log: HabitCompletionLog;
 };
 
 export default function HabitsPage() {
@@ -38,31 +54,87 @@ export default function HabitsPage() {
   const firestore = useFirestore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
+  const [feedback, setFeedback] = useState('Analyzing your performance...');
+  const [isAnalyzing, startTransition] = useTransition();
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
 
   const habitsCollection = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return collection(firestore, 'users', user.uid, 'habits');
   }, [user, firestore]);
+  
+  const habitLogDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'habitLogs', todayStr);
+  }, [user, firestore, todayStr]);
 
-  const { data: habits, isLoading } = useCollection<Habit>(habitsCollection);
+  const { data: habits, isLoading: isLoadingHabits } = useCollection<Habit>(habitsCollection);
+  const { data: dailyLog, isLoading: isLoadingLog } = useDoc<DailyLog>(habitLogDocRef);
 
-  const handleHabitToggle = (id: string, currentDone: boolean, currentStreak: number) => {
-    if (!habitsCollection) return;
-    const docRef = doc(habitsCollection, id);
-    const newStreak = currentDone ? currentStreak - 1 : currentStreak + 1;
-    updateDocumentNonBlocking(docRef, { done: !currentDone, streak: newStreak });
+  const isLoading = isLoadingHabits || isLoadingLog;
+
+  const combinedHabits = habits?.map(habit => ({
+    ...habit,
+    done: dailyLog?.log?.[habit.id] ?? false
+  }));
+
+  // Effect to fetch AI feedback
+  useEffect(() => {
+    if (combinedHabits) {
+      startTransition(async () => {
+        const result = await getHabitFeedback(combinedHabits);
+        if ('error' in result) {
+          setFeedback(result.error);
+        } else {
+          setFeedback(result.feedback);
+        }
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [habits, dailyLog]);
+
+
+  const handleHabitToggle = async (habit: Habit & {done: boolean}) => {
+    if (!user || !firestore) return;
+    
+    const habitRef = doc(firestore, 'users', user.uid, 'habits', habit.id);
+    const todayLogRef = doc(firestore, 'users', user.uid, 'habitLogs', todayStr);
+
+    const newDoneState = !habit.done;
+    let newStreak = habit.streak;
+
+    if (newDoneState) { // If completing the habit
+      const lastCompletedDate = habit.lastCompleted?.toDate();
+      if (!lastCompletedDate || !isToday(lastCompletedDate)) {
+        newStreak = newStreak + 1;
+      }
+      // Update the habit doc with new streak and completion date
+       setDocumentNonBlocking(habitRef, { streak: newStreak, lastCompleted: serverTimestamp() }, { merge: true });
+    } else { // If un-completing the habit
+      const lastCompletedDate = habit.lastCompleted?.toDate();
+      // Only decrement streak if it was completed today
+      if(lastCompletedDate && isToday(lastCompletedDate)) {
+        newStreak = Math.max(0, newStreak - 1);
+        // We can't know the "previous" lastCompleted date, so we'll leave it.
+        // A more complex system would store history.
+        setDocumentNonBlocking(habitRef, { streak: newStreak }, { merge: true });
+      }
+    }
+
+    // Update the daily log
+    const logUpdate = { [`log.${habit.id}`]: newDoneState };
+    // We use set with merge to create the doc if it doesn't exist
+    setDocumentNonBlocking(todayLogRef, logUpdate, { merge: true });
   };
+
 
   const handleAddHabit = () => {
     if (newHabitName.trim() && habitsCollection && user) {
-      const newHabit: Omit<Habit, 'id' | 'createdAt'> = {
+      addDocumentNonBlocking(habitsCollection, {
         name: newHabitName,
-        done: false,
         streak: 0,
         userProfileId: user.uid,
-      };
-      addDocumentNonBlocking(habitsCollection, {
-        ...newHabit,
         createdAt: serverTimestamp(),
       });
       setNewHabitName('');
@@ -78,7 +150,7 @@ export default function HabitsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex justify-between items-center">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold font-headline text-foreground">Habit Tracker</h1>
           <p className="text-muted-foreground mt-2">Log your daily habits and watch your streaks grow.</p>
@@ -88,6 +160,25 @@ export default function HabitsPage() {
           Add New Habit
         </Button>
       </header>
+
+      <Card className="shadow-neumorphic-outset">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-accent">
+            <BrainCircuit />
+            AI Coach
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isAnalyzing ? (
+             <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin"/>
+              {feedback}
+            </div>
+          ) : (
+            <p className="text-foreground font-medium italic">"{feedback}"</p>
+          )}
+        </CardContent>
+      </Card>
       
       <Card className="shadow-neumorphic-outset">
         <CardHeader>
@@ -95,6 +186,7 @@ export default function HabitsPage() {
             <Target className="text-accent" />
             Today's Habits
           </CardTitle>
+          <CardDescription>Last reset your habits streaks will be reset.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -103,10 +195,10 @@ export default function HabitsPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-accent" />
               </div>
             )}
-            {!isLoading && habits?.length === 0 && (
+            {!isLoading && combinedHabits?.length === 0 && (
               <p className="text-muted-foreground text-center py-4">No habits yet. Add one to get started!</p>
             )}
-            {habits?.map((habit) => (
+            {combinedHabits?.map((habit) => (
               <div
                 key={habit.id}
                 className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
@@ -115,7 +207,7 @@ export default function HabitsPage() {
                   <Checkbox
                     id={habit.id}
                     checked={habit.done}
-                    onCheckedChange={() => handleHabitToggle(habit.id, habit.done, habit.streak)}
+                    onCheckedChange={() => handleHabitToggle(habit)}
                     className="h-6 w-6 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"
                   />
                   <label
