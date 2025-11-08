@@ -1,46 +1,113 @@
 'use client';
-import { useState, FormEvent } from 'react';
+import { useState, useMemo, FormEvent } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ShoppingCart, PlusCircle, Trash2 } from 'lucide-react';
+import { ShoppingCart, PlusCircle, Trash2, Loader2, Tags } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
-type ShoppingItem = {
-  id: number;
-  name: string;
-  checked: boolean;
+type ShoppingListItem = {
+  id: string;
+  userProfileId: string;
+  description: string;
+  quantity: number;
+  purchased: boolean;
 };
 
 export default function ShoppingListPage() {
-  const [items, setItems] = useState<ShoppingItem[]>([
-    { id: 1, name: 'Milk', checked: false },
-    { id: 2, name: 'Bread', checked: true },
-    { id: 3, name: 'Eggs', checked: false },
-    { id: 4, name: 'Coffee Beans', checked: false },
-  ]);
-  const [newItem, setNewItem] = useState('');
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [newItemDescription, setNewItemDescription] = useState('');
+
+  const shoppingListCollection = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'shoppingListItems');
+  }, [user, firestore]);
+
+  const { data: items, isLoading } = useCollection<ShoppingListItem>(shoppingListCollection);
+
+  const { neededItems, purchasedItems } = useMemo(() => {
+    const needed: ShoppingListItem[] = [];
+    const purchased: ShoppingListItem[] = [];
+    items?.forEach(item => {
+      if (item.purchased) {
+        purchased.push(item);
+      } else {
+        needed.push(item);
+      }
+    });
+    return { neededItems: needed, purchasedItems: purchased };
+  }, [items]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!newItem.trim()) return;
-    const item: ShoppingItem = {
-      id: Date.now(),
-      name: newItem,
-      checked: false,
-    };
-    setItems([item, ...items]);
-    setNewItem('');
+    if (!newItemDescription.trim() || !user || !shoppingListCollection) return;
+    
+    addDocumentNonBlocking(shoppingListCollection, {
+      userProfileId: user.uid,
+      description: newItemDescription,
+      quantity: 1, // Default quantity
+      purchased: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    setNewItemDescription('');
   };
 
-  const toggleItem = (id: number) => {
-    setItems(items.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
+  const toggleItem = (item: ShoppingListItem) => {
+    if (!shoppingListCollection) return;
+    const docRef = doc(shoppingListCollection, item.id);
+    updateDocumentNonBlocking(docRef, { purchased: !item.purchased });
   };
   
-  const deleteItem = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
+  const deleteItem = (id: string) => {
+    if (!shoppingListCollection) return;
+    const docRef = doc(shoppingListCollection, id);
+    deleteDocumentNonBlocking(docRef);
   };
+
+  const renderShoppingList = (title: string, list: ShoppingListItem[], icon: React.ReactNode) => (
+     <div>
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-muted-foreground mb-4">
+            {icon}
+            {title}
+        </h3>
+        <div className="space-y-4">
+            {list.length > 0 ? list.map(item => (
+            <div
+                key={item.id}
+                className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
+            >
+                <div className="flex items-center gap-4">
+                <Checkbox
+                    id={`item-${item.id}`}
+                    checked={item.purchased}
+                    onCheckedChange={() => toggleItem(item)}
+                    className="h-5 w-5 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"
+                />
+                <label
+                    htmlFor={`item-${item.id}`}
+                    className={cn(
+                    'text-md font-medium',
+                    item.purchased && 'line-through text-muted-foreground'
+                    )}
+                >
+                    {item.description}
+                </label>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => deleteItem(item.id)}>
+                <Trash2 size={16} />
+                </Button>
+            </div>
+            )) : <p className="text-muted-foreground text-center py-4 text-sm">Nothing here!</p>}
+        </div>
+     </div>
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -56,9 +123,9 @@ export default function ShoppingListPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex items-center gap-4">
             <Input
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              placeholder="e.g., Apples"
+              value={newItemDescription}
+              onChange={(e) => setNewItemDescription(e.target.value)}
+              placeholder="e.g., Organic milk"
               className="flex-grow"
             />
             <Button type="submit" className="shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground">
@@ -77,35 +144,17 @@ export default function ShoppingListPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {items.length > 0 ? items.map(item => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
-              >
-                <div className="flex items-center gap-4">
-                  <Checkbox
-                    id={`item-${item.id}`}
-                    checked={item.checked}
-                    onCheckedChange={() => toggleItem(item.id)}
-                    className="h-5 w-5 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"
-                  />
-                  <label
-                    htmlFor={`item-${item.id}`}
-                    className={cn(
-                      'text-md font-medium',
-                      item.checked && 'line-through text-muted-foreground'
-                    )}
-                  >
-                    {item.name}
-                  </label>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => deleteItem(item.id)}>
-                  <Trash2 size={16} />
-                </Button>
-              </div>
-            )) : <p className="text-muted-foreground text-center py-4">Your shopping list is empty.</p>}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {renderShoppingList('Needed', neededItems, <ShoppingCart size={20} />)}
+              {purchasedItems.length > 0 && <Separator />}
+              {renderShoppingList('In Cart', purchasedItems, <Tags size={20} />)}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

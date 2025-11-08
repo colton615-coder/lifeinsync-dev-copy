@@ -1,9 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { PlusCircle, Dot } from 'lucide-react';
+import { PlusCircle, Dot, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,30 +20,67 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 type CalendarEvent = {
-  date: Date;
+  id: string;
+  userProfileId: string;
   title: string;
+  description: string;
+  startDate: any;
+  endDate: any;
 };
 
 export default function CalendarPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    { date: new Date(), title: 'Team Sync-Up' },
-    { date: new Date(new Date().setDate(new Date().getDate() + 2)), title: 'Project Deadline' },
-  ]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventDescription, setNewEventDescription] = useState('');
 
-  const selectedDayEvents = date
-    ? events.filter((event) => format(event.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
-    : [];
+  const eventsCollection = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'calendarEvents');
+  }, [user, firestore]);
+
+  const { data: events, isLoading } = useCollection<CalendarEvent>(eventsCollection);
+
+  const selectedDayEvents = useMemo(() => {
+    if (!date || !events) return [];
+    return events.filter(
+      (event) => format(event.startDate.toDate(), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+    );
+  }, [date, events]);
 
   const handleAddEvent = () => {
-    if (newEventTitle && date) {
-      setEvents([...events, { date, title: newEventTitle }]);
+    if (newEventTitle && date && user && eventsCollection) {
+      addDocumentNonBlocking(eventsCollection, {
+        userProfileId: user.uid,
+        title: newEventTitle,
+        description: newEventDescription,
+        startDate: date,
+        endDate: date, // Simplified for now
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
       setNewEventTitle('');
-      setIsDialogOpen(false);
+      setNewEventDescription('');
+      setIsAddDialogOpen(false);
     }
   };
+
+  const handleDeleteEvent = (eventId: string) => {
+    if (!eventsCollection || !eventId) return;
+    const docRef = doc(eventsCollection, eventId);
+    deleteDocumentNonBlocking(docRef);
+    setIsDetailDialogOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const openEventDetails = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsDetailDialogOpen(true);
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -52,6 +91,11 @@ export default function CalendarPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <Card className="shadow-neumorphic-outset md:col-span-2">
           <CardContent className="p-2 sm:p-4">
+            {isLoading ? (
+               <div className="flex justify-center items-center h-[300px]">
+                 <Loader2 className="h-8 w-8 animate-spin text-accent" />
+               </div>
+            ) : (
             <Calendar
               mode="single"
               selected={date}
@@ -64,7 +108,7 @@ export default function CalendarPage() {
               }}
               components={{
                 DayContent: ({ date, ...props }) => {
-                   const isEventDay = events.some(event => format(event.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
+                   const isEventDay = events?.some(event => format(event.startDate.toDate(), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
                    return (
                       <div className="relative">
                          <span>{date.getDate()}</span>
@@ -74,6 +118,7 @@ export default function CalendarPage() {
                 }
               }}
             />
+            )}
           </CardContent>
         </Card>
         <Card className="shadow-neumorphic-outset">
@@ -82,14 +127,18 @@ export default function CalendarPage() {
             <CardDescription>Events for the selected day.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => setIsDialogOpen(true)} className="w-full mb-4 shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground">
+            <Button onClick={() => setIsAddDialogOpen(true)} className="w-full mb-4 shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground">
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Event
             </Button>
             <div className="space-y-4">
-              {selectedDayEvents.length > 0 ? (
-                selectedDayEvents.map((event, index) => (
-                  <div key={index} className="p-3 rounded-md bg-background shadow-neumorphic-inset">
+              {isLoading ? (
+                 <div className="flex justify-center items-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-accent" />
+                 </div>
+              ): selectedDayEvents.length > 0 ? (
+                selectedDayEvents.map((event) => (
+                  <div key={event.id} onClick={() => openEventDetails(event)} className="p-3 rounded-md bg-background shadow-neumorphic-inset cursor-pointer hover:bg-accent/10 transition-colors">
                     <p className="font-medium text-foreground">{event.title}</p>
                   </div>
                 ))
@@ -100,12 +149,14 @@ export default function CalendarPage() {
           </CardContent>
         </Card>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+
+      {/* Add Event Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="shadow-neumorphic-outset bg-background border-transparent">
           <DialogHeader>
             <DialogTitle>Add Event for {date ? format(date, 'MMMM d') : ''}</DialogTitle>
             <DialogDescription>
-              Enter a title for your new event.
+              Enter details for your new event.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -120,6 +171,17 @@ export default function CalendarPage() {
                 className="col-span-3"
               />
             </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="event-desc" className="text-right">
+                Description
+              </Label>
+              <Input
+                id="event-desc"
+                value={newEventDescription}
+                onChange={(e) => setNewEventDescription(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
@@ -127,6 +189,32 @@ export default function CalendarPage() {
             </DialogClose>
             <Button onClick={handleAddEvent} className="shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground">Add Event</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Event Detail Dialog */}
+       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="shadow-neumorphic-outset bg-background border-transparent">
+          {selectedEvent && (
+            <>
+            <DialogHeader>
+              <DialogTitle>{selectedEvent.title}</DialogTitle>
+              <DialogDescription>
+                {format(selectedEvent.startDate.toDate(), 'MMMM d, yyyy')}
+              </DialogDescription>
+            </DialogHeader>
+            <p>{selectedEvent.description}</p>
+            <DialogFooter className="sm:justify-between">
+               <Button variant="destructive" onClick={() => handleDeleteEvent(selectedEvent.id)} className="shadow-neumorphic-outset active:shadow-neumorphic-inset">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Event
+               </Button>
+               <DialogClose asChild>
+                <Button type="button" variant="secondary" className="shadow-neumorphic-outset active:shadow-neumorphic-inset">Close</Button>
+               </DialogClose>
+            </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

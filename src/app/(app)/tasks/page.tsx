@@ -1,20 +1,25 @@
 'use client';
-import { useState, FormEvent } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { useState, useMemo, FormEvent } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ListTodo, PlusCircle, Trash2 } from 'lucide-react';
+import { ListTodo, PlusCircle, Trash2, Loader2, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 type Priority = 'Low' | 'Medium' | 'High';
 
 type Task = {
-  id: number;
-  text: string;
-  done: boolean;
+  id: string;
+  userProfileId: string;
+  description: string;
+  completed: boolean;
   priority: Priority;
 };
 
@@ -25,34 +30,104 @@ const priorityColors: Record<Priority, string> = {
 };
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, text: 'Finalize Q3 report', done: false, priority: 'High' },
-    { id: 2, text: 'Book dentist appointment', done: true, priority: 'Medium' },
-    { id: 3, text: 'Water the plants', done: false, priority: 'Low' },
-  ]);
-  const [newTask, setNewTask] = useState('');
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newPriority, setNewPriority] = useState<Priority>('Medium');
+
+  const tasksCollection = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'tasks');
+  }, [user, firestore]);
+
+  const { data: tasks, isLoading } = useCollection<Task>(tasksCollection);
+  
+  const { pendingTasks, completedTasks } = useMemo(() => {
+    const pending: Task[] = [];
+    const completed: Task[] = [];
+    tasks?.forEach(task => {
+        if (task.completed) {
+            completed.push(task);
+        } else {
+            pending.push(task);
+        }
+    });
+    return { pendingTasks: pending, completedTasks: completed };
+  }, [tasks]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!newTask.trim()) return;
-    const task: Task = {
-      id: Date.now(),
-      text: newTask,
-      done: false,
+    if (!newTaskDescription.trim() || !user || !tasksCollection) return;
+    
+    addDocumentNonBlocking(tasksCollection, {
+      userProfileId: user.uid,
+      description: newTaskDescription,
+      completed: false,
       priority: newPriority,
-    };
-    setTasks([task, ...tasks]);
-    setNewTask('');
+      dueDate: serverTimestamp(), // Simplified for now
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    setNewTaskDescription('');
+    setNewPriority('Medium');
   };
 
-  const toggleTask = (id: number) => {
-    setTasks(tasks.map(task => task.id === id ? { ...task, done: !task.done } : task));
+  const toggleTask = (task: Task) => {
+    if (!tasksCollection) return;
+    const docRef = doc(tasksCollection, task.id);
+    updateDocumentNonBlocking(docRef, { completed: !task.completed });
   };
   
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const deleteTask = (id: string) => {
+    if (!tasksCollection) return;
+    const docRef = doc(tasksCollection, id);
+    deleteDocumentNonBlocking(docRef);
   };
+  
+  const renderTaskList = (title: string, list: Task[], icon: React.ReactNode) => (
+    <div>
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-muted-foreground mb-4">
+            {icon}
+            {title}
+        </h3>
+        <div className="space-y-4">
+            {list.map(task => (
+            <div
+                key={task.id}
+                className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
+            >
+                <div className="flex items-center gap-4">
+                <Checkbox
+                    id={`task-${task.id}`}
+                    checked={task.completed}
+                    onCheckedChange={() => toggleTask(task)}
+                    className="h-5 w-5 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"
+                />
+                <label
+                    htmlFor={`task-${task.id}`}
+                    className={cn(
+                    'text-md font-medium',
+                    task.completed && 'line-through text-muted-foreground'
+                    )}
+                >
+                    {task.description}
+                </label>
+                </div>
+                <div className="flex items-center gap-4">
+                <Badge className={cn('border', priorityColors[task.priority])}>
+                    {task.priority}
+                </Badge>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => deleteTask(task.id)}>
+                    <Trash2 size={16}/>
+                </Button>
+                </div>
+            </div>
+            ))}
+             {list.length === 0 && <p className="text-muted-foreground text-center py-4 text-sm">Nothing here!</p>}
+        </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -68,8 +143,8 @@ export default function TasksPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
             <Input
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
+              value={newTaskDescription}
+              onChange={(e) => setNewTaskDescription(e.target.value)}
               placeholder="What needs to be done?"
               className="flex-grow"
             />
@@ -99,40 +174,17 @@ export default function TasksPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {tasks.map(task => (
-              <div
-                key={task.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
-              >
-                <div className="flex items-center gap-4">
-                  <Checkbox
-                    id={`task-${task.id}`}
-                    checked={task.done}
-                    onCheckedChange={() => toggleTask(task.id)}
-                    className="h-5 w-5 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"
-                  />
-                  <label
-                    htmlFor={`task-${task.id}`}
-                    className={cn(
-                      'text-md font-medium',
-                      task.done && 'line-through text-muted-foreground'
-                    )}
-                  >
-                    {task.text}
-                  </label>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Badge className={cn('border', priorityColors[task.priority])}>
-                    {task.priority}
-                  </Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => deleteTask(task.id)}>
-                      <Trash2 size={16}/>
-                  </Button>
-                </div>
-              </div>
-            ))}
+        {isLoading ? (
+             <div className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-accent" />
+             </div>
+        ) : (
+          <div className="space-y-8">
+            {renderTaskList('Pending', pendingTasks, <ListTodo size={20} />)}
+            {completedTasks.length > 0 && <Separator />}
+            {renderTaskList('Completed', completedTasks, <Check size={20} />)}
           </div>
+        )}
         </CardContent>
       </Card>
     </div>
