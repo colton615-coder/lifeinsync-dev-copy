@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useTransition, useMemo } from 'react';
-import { useUser, useFirestore, useDoc, setDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, setDocumentNonBlocking, updateDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { getDailyPrompt, getJournalAnalysis } from './actions';
 import type { MoodAnalysisOutput } from '@/ai/flows/mood-analysis-from-journal';
