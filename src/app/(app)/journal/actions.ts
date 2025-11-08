@@ -8,6 +8,10 @@ import {
   MoodAnalysisOutput,
 } from '@/ai/flows/mood-analysis-from-journal';
 
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
+import { JournalEntry } from './JournalClient';
+
 export async function getDailyPrompt(): Promise<JournalPromptOutput> {
   try {
     const result = await generateJournalPrompt({});
