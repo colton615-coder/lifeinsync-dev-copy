@@ -7,12 +7,14 @@ import { Dumbbell, PlayCircle, Clock, Loader2, Wand2 } from 'lucide-react';
 import { getWorkoutPlan } from './actions';
 import type { WorkoutPlan } from '@/ai/flows/workout-generator';
 import { useToast } from '@/hooks/use-toast';
+import { ActiveWorkout } from './ActiveWorkout';
 
 export default function WorkoutsPage() {
   const [prompt, setPrompt] = useState('');
   const [workout, setWorkout] = useState<WorkoutPlan | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
 
   const handleGenerateWorkout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +39,14 @@ export default function WorkoutsPage() {
     const totalSeconds = exercises.reduce((acc, ex) => acc + ex.duration, 0);
     return Math.ceil(totalSeconds / 60);
   };
+  
+  if (isWorkoutActive && workout) {
+    return <ActiveWorkout workout={workout} onFinish={() => {
+        setIsWorkoutActive(false);
+        setWorkout(null);
+        setPrompt('');
+    }} />;
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -104,7 +114,7 @@ export default function WorkoutsPage() {
             </ul>
           </CardContent>
           <CardFooter>
-            <Button className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground">
+            <Button onClick={() => setIsWorkoutActive(true)} className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground">
               <PlayCircle className="mr-2 h-4 w-4" />
               Start Workout
             </Button>
