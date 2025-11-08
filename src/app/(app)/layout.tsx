@@ -75,16 +75,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 items-center justify-between border-b border-border px-4 md:hidden">
+        <header className="flex h-14 items-center border-b border-border px-4 md:hidden">
           <div className="flex items-center gap-2">
-             <Link href="/dashboard">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 text-primary shadow-neumorphic-outset cursor-pointer">
-                <Bot className="h-5 w-5 text-accent" />
-              </div>
-            </Link>
+             <SidebarTrigger asChild>
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 text-primary shadow-neumorphic-outset cursor-pointer">
+                    <Bot className="h-5 w-5 text-accent" />
+                </div>
+             </SidebarTrigger>
             <h1 className="text-lg font-bold font-headline text-accent">LiFE-iN-SYNC</h1>
           </div>
-          <SidebarTrigger className="shadow-neumorphic-outset active:shadow-neumorphic-inset h-9 w-9"/>
         </header>
         <main className="min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8">{children}</main>
       </SidebarInset>
