@@ -5,7 +5,7 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { DollarSign, PiggyBank, Receipt, PlusCircle, Loader2 } from 'lucide-react';
 import { FinanceChart } from './FinanceChart';
@@ -15,7 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogDescription as DialogDescriptionComponent,
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
@@ -96,10 +96,10 @@ export default function FinancePage() {
   };
 
   const handleAddExpense = () => {
-    if (newExpenseDescription.trim() && newExpenseAmount && user && expensesCollection) {
+    if (newExpenseDescription.trim() && newExpenseAmount && user && expensesCollection && activeBudget) {
       addDocumentNonBlocking(expensesCollection, {
         userProfileId: user.uid,
-        budgetId: activeBudget!.id,
+        budgetId: activeBudget.id,
         description: newExpenseDescription,
         amount: parseFloat(newExpenseAmount),
         date: serverTimestamp(), // Using server timestamp for expense date
@@ -117,8 +117,10 @@ export default function FinancePage() {
     if (!expenses) return [];
     const spendingByMonth: {[key: string]: number} = {};
     expenses.forEach(expense => {
-      const month = format(expense.date.toDate(), 'MMM');
-      spendingByMonth[month] = (spendingByMonth[month] || 0) + expense.amount;
+      if (expense.date?.toDate) {
+        const month = format(expense.date.toDate(), 'MMM');
+        spendingByMonth[month] = (spendingByMonth[month] || 0) + expense.amount;
+      }
     });
 
     // Format for chart
@@ -220,9 +222,9 @@ export default function FinancePage() {
         <DialogContent className="shadow-neumorphic-outset bg-background border-transparent">
           <DialogHeader>
             <DialogTitle>Create a New Budget</DialogTitle>
-            <DialogDescription>
+            <DialogDescriptionComponent>
               Define a new budget to track your spending.
-            </DialogDescription>
+            </DialogDescriptionComponent>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -264,9 +266,9 @@ export default function FinancePage() {
         <DialogContent className="shadow-neumorphic-outset bg-background border-transparent">
           <DialogHeader>
             <DialogTitle>Add a New Expense</DialogTitle>
-            <DialogDescription>
+            <DialogDescriptionComponent>
               Log a new expense for your '{activeBudget?.name}' budget.
-            </DialogDescription>
+            </DialogDescriptionComponent>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -306,5 +308,3 @@ export default function FinancePage() {
     </div>
   );
 }
-
-    

@@ -31,29 +31,27 @@ export function FinanceChart({ data }: FinanceChartProps) {
       <CardContent>
         {data.length > 0 ? (
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <ResponsiveContainer>
-              <BarChart data={data} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
-                <XAxis
-                  dataKey="month"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `$${value}`}
-                />
-                <Tooltip
-                  cursor={{ fill: 'hsl(var(--accent) / 0.1)' }}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Bar dataKey="spending" fill="var(--color-spending)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarChart data={data} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+              <XAxis
+                dataKey="month"
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `$${value}`}
+              />
+              <Tooltip
+                cursor={{ fill: 'hsl(var(--accent) / 0.1)' }}
+                content={<ChartTooltipContent indicator="dot" />}
+              />
+              <Bar dataKey="spending" fill="var(--color-spending)" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ChartContainer>
         ) : (
           <div className="flex h-[300px] w-full items-center justify-center">
@@ -64,5 +62,3 @@ export function FinanceChart({ data }: FinanceChartProps) {
     </Card>
   );
 }
-
-    
