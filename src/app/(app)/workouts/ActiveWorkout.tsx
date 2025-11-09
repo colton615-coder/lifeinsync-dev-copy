@@ -93,63 +93,70 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
       <div className="relative z-10 flex flex-col items-center justify-between h-full py-8 text-center">
         <header className="flex flex-col items-center">
           <p className="font-semibold text-accent">{currentExercise.category}</p>
-          <h1 className="text-4xl font-bold font-headline">{currentExercise.name}</h1>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-headline text-shadow-lg">{currentExercise.name}</h1>
         </header>
 
-        <div className="relative flex items-center justify-center">
-          <svg className="w-64 h-64 transform -rotate-90">
+        <div className="relative flex items-center justify-center my-8">
+          <svg className="w-64 h-64 sm:w-72 sm:h-72 transform -rotate-90">
             <circle
-              cx="128"
-              cy="128"
+              cx="50%"
+              cy="50%"
               r="120"
-              stroke="hsl(var(--muted))"
+              stroke="hsl(var(--muted) / 0.5)"
               strokeWidth="10"
               fill="transparent"
+              className="sm:r-[136px]"
             />
             <circle
-              cx="128"
-              cy="128"
+              cx="50%"
+              cy="50%"
               r="120"
               stroke="hsl(var(--accent))"
               strokeWidth="10"
               fill="transparent"
               strokeDasharray={2 * Math.PI * 120}
               strokeDashoffset={(2 * Math.PI * 120) * (1 - (timerProgress / 100))}
-              className="transition-all duration-1000 ease-linear"
+              className="transition-all duration-1000 ease-linear sm:r-[136px]"
+              style={{ strokeLinecap: 'round' }}
             />
           </svg>
-          <div className="absolute font-mono text-7xl font-bold">
+          <div className="absolute font-mono text-7xl sm:text-8xl font-bold text-shadow-lg">
             {timeLeft}
           </div>
         </div>
 
-        <div className="w-full max-w-md px-4">
+        <div className="w-full max-w-md px-4 space-y-4">
           <Card className="bg-background/50 backdrop-blur-sm shadow-neumorphic-outset">
-            <CardHeader>
-              <CardTitle className="text-sm text-muted-foreground">Next Up</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {nextExercise ? (
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">{nextExercise.name}</span>
-                  <span className="text-muted-foreground">{nextExercise.duration}s</span>
+            <CardHeader className="flex-row items-center justify-between p-3">
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0 shadow-neumorphic-inset">
+                  {nextExercise ? (
+                     <ExerciseImage asset={nextExercise.asset} name={nextExercise.name} alt={nextExercise.name} className="w-full h-full" />
+                  ) : (
+                    <div className="w-full h-full bg-background flex items-center justify-center text-accent font-bold">END</div>
+                  )}
                 </div>
-              ) : (
-                <p className="font-semibold text-center">Final Exercise!</p>
-              )}
-            </CardContent>
+                <div>
+                    <CardTitle className="text-sm text-left text-muted-foreground">Next Up</CardTitle>
+                    <CardDescription className="text-lg text-left font-semibold text-foreground">
+                        {nextExercise ? nextExercise.name : 'Final Exercise!'}
+                    </CardDescription>
+                </div>
+              </div>
+               {nextExercise && <span className="text-2xl font-semibold text-muted-foreground">{nextExercise.duration}s</span>}
+            </CardHeader>
           </Card>
-        </div>
 
-        <div className="flex justify-center gap-4">
-          <Button onClick={handlePause} size="lg" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32 bg-primary/20 hover:bg-primary/30 text-primary-foreground">
-            <PauseCircle />
-            <span className="ml-2">Pause</span>
-          </Button>
-          <Button onClick={handleSkip} size="lg" variant="outline" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32">
-            <SkipForward />
-            <span className="ml-2">Skip</span>
-          </Button>
+          <div className="flex justify-center gap-4">
+            <Button onClick={handlePause} size="lg" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32 bg-primary/20 hover:bg-primary/30 text-primary-foreground">
+              <PauseCircle />
+              <span className="ml-2">Pause</span>
+            </Button>
+            <Button onClick={handleSkip} size="lg" variant="outline" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32">
+              <SkipForward />
+              <span className="ml-2">Skip</span>
+            </Button>
+          </div>
         </div>
       </div>
       
