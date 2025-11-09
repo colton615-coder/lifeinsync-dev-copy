@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import type { WorkoutPlan } from '@/ai/flows/workout-generator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PauseCircle, PlayCircle, SkipForward, XCircle } from 'lucide-react';
+import { PauseCircle, PlayCircle, SkipForward, XCircle, Info, Check } from 'lucide-react';
 import { ExerciseImage } from '@/components/ui/ExerciseImage';
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 interface ActiveWorkoutProps {
   workout: WorkoutPlan;
@@ -23,21 +24,19 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isPauseModalOpen, setIsPauseModalOpen] = useState(false);
+  const [isInstructionsSheetOpen, setIsInstructionsSheetOpen] = useState(false);
   
   const currentExercise = workout.exercises[currentExerciseIndex];
-  const [timeLeft, setTimeLeft] = useState(currentExercise.duration);
+  const [timeLeft, setTimeLeft] = useState(currentExercise.duration || 0);
   const nextExercise = workout.exercises[currentExerciseIndex + 1];
 
+  // Main timer effect for TIME-BASED exercises
   useEffect(() => {
-    if (isPaused || isPauseModalOpen) return;
+    if (isPaused || isPauseModalOpen || currentExercise.type !== 'time') return;
 
     if (timeLeft <= 0) {
-      if (currentExerciseIndex < workout.exercises.length - 1) {
-        setCurrentExerciseIndex(prev => prev + 1);
-      } else {
-        onFinish(true); // Workout completed
-      }
-      return;
+        goToNextExercise();
+        return;
     }
 
     const timer = setInterval(() => {
@@ -45,20 +44,24 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isPaused, isPauseModalOpen, currentExerciseIndex, workout.exercises.length, onFinish]);
+  }, [timeLeft, isPaused, isPauseModalOpen, currentExercise.type]);
 
-  // When exercise changes, reset the timer for the new one
+  // When exercise changes, reset the state for the new one.
   useEffect(() => {
-    setTimeLeft(workout.exercises[currentExerciseIndex].duration);
+    setTimeLeft(workout.exercises[currentExerciseIndex].duration || 0);
   }, [currentExerciseIndex, workout.exercises]);
 
 
-  const handleSkip = () => {
+  const goToNextExercise = () => {
     if (currentExerciseIndex < workout.exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
     } else {
-      onFinish(true); // Skipped last exercise, treat as completed
+      onFinish(true); // Workout completed
     }
+  }
+
+  const handleSkip = () => {
+    goToNextExercise();
   };
   
   const handlePause = () => {
@@ -75,8 +78,14 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
     setIsPauseModalOpen(false);
     onFinish(false); // Workout not completed
   }
+  
+  const handleCompleteSet = () => {
+      goToNextExercise(); // For rep-based exercises
+  }
 
-  const timerProgress = (timeLeft / currentExercise.duration) * 100;
+  const timerProgress = currentExercise.duration ? (timeLeft / currentExercise.duration) * 100 : 0;
+  
+  const isRepBased = currentExercise.type === 'reps';
 
   return (
     <>
@@ -91,39 +100,39 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-between h-full py-8 text-center">
-        <header className="flex flex-col items-center">
-          <p className="font-semibold text-accent">{currentExercise.category}</p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-headline text-shadow-lg">{currentExercise.name}</h1>
+        <header className="flex flex-col items-center w-full px-4">
+          <div className="flex justify-between items-center w-full max-w-md">
+            <div className="flex-1 text-left">
+                 <p className="font-semibold text-accent">{currentExercise.category}</p>
+                 {isRepBased && currentExercise.sets && <p className="text-sm font-bold text-muted-foreground">Set {currentExercise.sets}</p>}
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-bold font-headline text-shadow-lg text-center flex-shrink-0 mx-4">{currentExercise.name}</h1>
+            <div className="flex-1 text-right">
+                <Button variant="ghost" size="icon" onClick={() => setIsInstructionsSheetOpen(true)}>
+                    <Info className="text-accent"/>
+                </Button>
+            </div>
+          </div>
         </header>
 
-        <div className="relative flex items-center justify-center my-8">
-          <svg className="w-64 h-64 sm:w-72 sm:h-72 transform -rotate-90">
-            <circle
-              cx="50%"
-              cy="50%"
-              r="120"
-              stroke="hsl(var(--muted) / 0.5)"
-              strokeWidth="10"
-              fill="transparent"
-              className="sm:r-[136px]"
-            />
-            <circle
-              cx="50%"
-              cy="50%"
-              r="120"
-              stroke="hsl(var(--accent))"
-              strokeWidth="10"
-              fill="transparent"
-              strokeDasharray={2 * Math.PI * 120}
-              strokeDashoffset={(2 * Math.PI * 120) * (1 - (timerProgress / 100))}
-              className="transition-all duration-1000 ease-linear sm:r-[136px]"
-              style={{ strokeLinecap: 'round' }}
-            />
-          </svg>
-          <div className="absolute font-mono text-7xl sm:text-8xl font-bold text-shadow-lg">
-            {timeLeft}
-          </div>
-        </div>
+        {isRepBased ? (
+            <div className="relative flex items-center justify-center my-8">
+                <div className="font-mono text-7xl sm:text-8xl font-bold text-shadow-lg">
+                    {currentExercise.reps}
+                    <span className="text-4xl sm:text-5xl ml-2 text-muted-foreground">Reps</span>
+                </div>
+            </div>
+        ) : (
+            <div className="relative flex items-center justify-center my-8">
+                <svg className="w-64 h-64 sm:w-72 sm:h-72 transform -rotate-90">
+                    <circle cx="50%" cy="50%" r="120" stroke="hsl(var(--muted) / 0.5)" strokeWidth="10" fill="transparent" className="sm:r-[136px]" />
+                    <circle cx="50%" cy="50%" r="120" stroke="hsl(var(--accent))" strokeWidth="10" fill="transparent"
+                        strokeDasharray={2 * Math.PI * 120} strokeDashoffset={(2 * Math.PI * 120) * (1 - (timerProgress / 100))}
+                        className="transition-all duration-1000 ease-linear sm:r-[136px]" style={{ strokeLinecap: 'round' }} />
+                </svg>
+                <div className="absolute font-mono text-7xl sm:text-8xl font-bold text-shadow-lg">{timeLeft}</div>
+            </div>
+        )}
 
         <div className="w-full max-w-md px-4 space-y-4">
           <Card className="bg-background/50 backdrop-blur-sm shadow-neumorphic-outset">
@@ -143,43 +152,55 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
                     </CardDescription>
                 </div>
               </div>
-               {nextExercise && <span className="text-2xl font-semibold text-muted-foreground">{nextExercise.duration}s</span>}
+               {nextExercise && <span className="text-2xl font-semibold text-muted-foreground">{nextExercise.duration ? `${nextExercise.duration}s` : `${nextExercise.reps} reps`}</span>}
             </CardHeader>
           </Card>
-
-          <div className="flex justify-center gap-4">
-            <Button onClick={handlePause} size="lg" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32 bg-primary/20 hover:bg-primary/30 text-primary-foreground">
-              <PauseCircle />
-              <span className="ml-2">Pause</span>
-            </Button>
-            <Button onClick={handleSkip} size="lg" variant="outline" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32">
-              <SkipForward />
-              <span className="ml-2">Skip</span>
-            </Button>
-          </div>
+          
+          {isRepBased ? (
+              <Button onClick={handleCompleteSet} size="lg" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-full h-16 text-lg bg-green-500/80 hover:bg-green-500 text-white">
+                <Check />
+                <span className="ml-2">Complete Set</span>
+              </Button>
+          ) : (
+            <div className="flex justify-center gap-4">
+                <Button onClick={handlePause} size="lg" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32 bg-primary/20 hover:bg-primary/30 text-primary-foreground">
+                <PauseCircle />
+                <span className="ml-2">Pause</span>
+                </Button>
+                <Button onClick={handleSkip} size="lg" variant="outline" className="shadow-neumorphic-outset active:shadow-neumorphic-inset w-32">
+                <SkipForward />
+                <span className="ml-2">Skip</span>
+                </Button>
+            </div>
+          )}
         </div>
       </div>
       
        <Dialog open={isPauseModalOpen} onOpenChange={(open) => !open && handleResume()}>
         <DialogContent className="shadow-neumorphic-outset bg-background border-transparent" hideCloseButton>
-          <DialogHeader className="items-center text-center">
-            <DialogTitle className="text-2xl">Workout Paused</DialogTitle>
-             <DialogDescription>
-              Take a breather. Ready to get back to it?
-            </DialogDescription>
-          </DialogHeader>
+          <DialogHeader className="items-center text-center"><DialogTitle className="text-2xl">Workout Paused</DialogTitle><DialogDescription>Take a breather. Ready to get back to it?</DialogDescription></DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
-            <Button onClick={handleResume} className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground">
-              <PlayCircle className="mr-2 h-4 w-4" />
-              Resume Workout
-            </Button>
-            <Button onClick={handleEndWorkout} variant="destructive" className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset">
-               <XCircle className="mr-2 h-4 w-4" />
-              End Workout
-            </Button>
+            <Button onClick={handleResume} className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground"><PlayCircle className="mr-2 h-4 w-4" />Resume Workout</Button>
+            <Button onClick={handleEndWorkout} variant="destructive" className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset"><XCircle className="mr-2 h-4 w-4" />End Workout</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Sheet open={isInstructionsSheetOpen} onOpenChange={setIsInstructionsSheetOpen}>
+        <SheetContent side="bottom" className="rounded-t-lg bg-background/95 backdrop-blur-lg">
+            <SheetHeader>
+                <SheetTitle className="text-2xl mb-4">{currentExercise.name}</SheetTitle>
+            </SheetHeader>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1 rounded-lg overflow-hidden h-48 md:h-auto">
+                     <ExerciseImage asset={currentExercise.asset} name={currentExercise.name} alt={currentExercise.name} className="w-full h-full object-cover"/>
+                </div>
+                <div className="md:col-span-2">
+                    <SheetDescription className="text-base text-foreground whitespace-pre-line">{currentExercise.instructions}</SheetDescription>
+                </div>
+            </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
