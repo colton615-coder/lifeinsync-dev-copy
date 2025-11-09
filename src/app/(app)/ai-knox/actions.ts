@@ -8,6 +8,9 @@ import {
   generateJournalPrompt,
   JournalPromptOutput,
 } from '@/ai/flows/journal-insight-prompt';
+import { addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { getSdks } from '@/firebase'; // Assuming getSdks is exported and initializes services
 
 
 export async function getDailyPrompt(): Promise<JournalPromptOutput> {
@@ -33,4 +36,30 @@ export async function getAiKnoxResponse(
     console.error('Error getting AI Knox response:', error);
     return { error: 'AI Knox is unavailable right now. Please try again later.' };
   }
+}
+
+
+type SaveJournalEntryInput = {
+  content: string;
+  userId: string;
+};
+
+export async function saveJournalEntry(input: SaveJournalEntryInput) {
+  const { firestore } = getSdks();
+  if (!firestore) {
+    throw new Error("Firestore is not initialized");
+  }
+
+  const journalEntriesCollection = collection(firestore, 'users', input.userId, 'journalEntries');
+  
+  return addDocumentNonBlocking(journalEntriesCollection, {
+    content: input.content,
+    createdAt: serverTimestamp(),
+    userProfileId: input.userId, // Maintain schema consistency
+    // other fields from schema with default/null values
+    id: '',
+    date: new Date().toISOString(),
+    aiInsight: '',
+    updatedAt: serverTimestamp(),
+  });
 }

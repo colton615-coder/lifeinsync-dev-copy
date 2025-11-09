@@ -7,7 +7,8 @@ import {
   Dumbbell, 
   ListTodo, 
   ShoppingCart, 
-  Calendar 
+  Calendar,
+  Lock
 } from "lucide-react";
 
 export type NavLink = {
@@ -21,6 +22,7 @@ export const navLinks: NavLink[] = [
   { href: "/habits", label: "Habit Tracker", icon: CheckCircle },
   { href: "/finance", label: "Finance", icon: Wallet },
   { href: "/ai-knox", label: "AI Companion", icon: Bot },
+  { href: "/vault", label: "Secure Vault", icon: Lock },
   { href: "/workouts", label: "Workouts", icon: Dumbbell },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
   { href: "/shopping", label: "Shopping List", icon: ShoppingCart },
