@@ -39,20 +39,21 @@ const AIWorkoutPlanSchema = z.object({
 
 // This is the "unrolled" rich object we will send to the client.
 // It includes the full exercise data plus the specific parameters for this step.
-const ClientExerciseSchema = z.custom<Exercise>().extend({
-  type: z.enum(['time', 'reps']),
-  duration: z.number().optional(),
-  reps: z.number().optional(),
-  sets: z.string().optional().describe("The set count, e.g., '1/3', '2/3'. Null if not part of a set block."),
-  category: z.enum(['Warm-up', 'Work', 'Cool-down', 'Rest']), // Added category for UI
-});
+export type ClientExercise = Exercise & {
+  type: 'time' | 'reps';
+  duration?: number;
+  reps?: number;
+  sets?: string; // e.g., '1/3', '2/3'. Null if not part of a set block.
+  category: 'Warm-up' | 'Work' | 'Cool-down' | 'Rest';
+};
 
 const WorkoutPlanSchema = z.object({
   name: z.string(),
   focus: z.string(),
-  exercises: z.array(ClientExerciseSchema),
+  exercises: z.array(z.any()), // We will manually construct and type this array.
 });
-export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema>;
+export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema> & { exercises: ClientExercise[] };
+
 
 export async function generateWorkoutPlan(input: WorkoutGeneratorInput): Promise<WorkoutPlan> {
   return workoutGeneratorFlow(input);
@@ -90,7 +91,7 @@ const workoutGeneratorFlow = ai.defineFlow(
     inputSchema: WorkoutGeneratorInputSchema,
     outputSchema: WorkoutPlanSchema,
   },
-  async (input) => {
+  async (input): Promise<WorkoutPlan> => {
     // 1. Get the structured plan from the AI (which may include sets).
     const { output: aiPlan } = await prompt({ ...input, availableExercises });
     if (!aiPlan) {
@@ -98,7 +99,7 @@ const workoutGeneratorFlow = ai.defineFlow(
     }
 
     // 2. Unroll the AI-generated plan into a simple, flat array for the client.
-    const unrolledExercises: z.infer<typeof ClientExerciseSchema>[] = [];
+    const unrolledExercises: ClientExercise[] = [];
     aiPlan.exercises.forEach(aiExercise => {
       const baseExerciseData = exerciseLibrary[aiExercise.exerciseId];
       if (!baseExerciseData) {
