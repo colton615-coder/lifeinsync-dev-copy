@@ -1,3 +1,4 @@
+
 // This component has been significantly refactored for Step 3 to include
 // the Proactive and Interactive AI Coach features.
 //
