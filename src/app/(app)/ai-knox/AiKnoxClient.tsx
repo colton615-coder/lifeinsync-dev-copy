@@ -19,6 +19,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 type Message = {
   sender: 'user' | 'ai';
