@@ -9,7 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { exerciseLibrary } from '@/lib/exerciseDatabase';
+import { exerciseLibrary, ExerciseAsset } from '@/lib/exerciseDatabase';
 
 const WorkoutGeneratorInputSchema = z.object({
   prompt: z
@@ -40,7 +40,7 @@ const ClientExerciseSchema = z.object({
   description: z.string(),
   duration: z.number(),
   category: z.enum(['Warm-up', 'Work', 'Cool-down', 'Rest']),
-  gifUrl: z.string().url(),
+  asset: z.custom<ExerciseAsset>(),
 });
 
 const WorkoutPlanSchema = z.object({

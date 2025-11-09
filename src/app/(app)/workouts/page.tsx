@@ -9,7 +9,7 @@ import type { WorkoutPlan } from '@/ai/flows/workout-generator';
 import { useToast } from '@/hooks/use-toast';
 import { ActiveWorkout } from './ActiveWorkout';
 import { WorkoutSummary } from './WorkoutSummary';
-import Image from 'next/image';
+import { ExerciseImage } from '@/components/ui/ExerciseImage';
 
 type WorkoutScreen = 'generator' | 'lobby' | 'active' | 'summary';
 
@@ -135,15 +135,14 @@ export default function WorkoutsPage() {
             <div className="space-y-4">
               {workout.exercises.map((ex, index) => (
                 <Card key={`${ex.name}-${index}`} className="flex items-center gap-4 p-3 bg-background shadow-neumorphic-inset">
-                  <Image
-                      src={ex.gifUrl}
+                  <div className="w-20 h-20 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                    <ExerciseImage
+                      asset={ex.asset}
+                      name={ex.name}
                       alt={ex.name}
-                      width={80}
-                      height={80}
-                      className="rounded-md object-cover aspect-square bg-muted"
-                      unoptimized={true} // Important for GIFs
-                      data-ai-hint="exercise"
+                      className="w-full h-full"
                     />
+                  </div>
                   <div className="flex-grow">
                     <p className="font-semibold">{ex.name}</p>
                     <p className="text-xs text-muted-foreground">{ex.category}</p>

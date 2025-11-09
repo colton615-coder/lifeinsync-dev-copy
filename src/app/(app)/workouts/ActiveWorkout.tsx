@@ -4,7 +4,7 @@ import type { WorkoutPlan } from '@/ai/flows/workout-generator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PauseCircle, PlayCircle, SkipForward, XCircle } from 'lucide-react';
-import Image from 'next/image';
+import { ExerciseImage } from '@/components/ui/ExerciseImage';
 import {
   Dialog,
   DialogContent,
@@ -81,14 +81,11 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
   return (
     <>
       <div className="fixed inset-0 w-full h-full">
-        <Image
-          src={currentExercise.gifUrl}
-          alt={currentExercise.name}
-          layout="fill"
-          objectFit="cover"
-          className="opacity-20"
-          unoptimized={true} // Important for GIFs
-          data-ai-hint="exercise video"
+        <ExerciseImage
+            asset={currentExercise.asset}
+            name={currentExercise.name}
+            alt={currentExercise.name}
+            className="w-full h-full object-cover opacity-20"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
       </div>
