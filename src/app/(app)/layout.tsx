@@ -85,7 +85,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </SidebarTrigger>
         </header>
-        <main className="min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
