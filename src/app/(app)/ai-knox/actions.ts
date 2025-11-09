@@ -8,9 +8,20 @@ import {
   generateJournalPrompt,
   JournalPromptOutput,
 } from '@/ai/flows/journal-insight-prompt';
-import { addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
-import { getSdks } from '@/firebase'; // Assuming getSdks is exported and initializes services
+import { addDoc, collection, serverTimestamp, getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { firebaseConfig } from '@/firebase/config';
+import { v4 as uuidv4 } from 'uuid';
+
+
+function getFirebaseServices() {
+  if (!getApps().length) {
+    initializeApp(firebaseConfig);
+  }
+  const app = getApp();
+  const firestore = getFirestore(app);
+  return { firestore };
+}
 
 
 export async function getDailyPrompt(): Promise<JournalPromptOutput> {
@@ -45,23 +56,25 @@ type SaveJournalEntryInput = {
 };
 
 export async function saveJournalEntry(input: SaveJournalEntryInput) {
-  const { firestore } = getSdks();
-  if (!firestore) {
-    console.error("Save to Vault Failed: Firestore is not initialized.");
-    throw new Error("Firestore is not initialized");
-  }
+  const { firestore } = getFirebaseServices();
 
   const journalEntriesCollection = collection(firestore, 'users', input.userId, 'journalEntries');
-  console.log("Saving to path:", journalEntriesCollection.path);
   
-  return addDocumentNonBlocking(journalEntriesCollection, {
+  const docData = {
     content: input.content,
     createdAt: serverTimestamp(),
-    userProfileId: input.userId, // Maintain schema consistency
-    // other fields from schema with default/null values
-    id: '',
+    userProfileId: input.userId,
+    id: uuidv4(),
     date: new Date().toISOString(),
     aiInsight: '',
     updatedAt: serverTimestamp(),
-  });
+  };
+
+  try {
+    await addDoc(journalEntriesCollection, docData);
+  } catch (error) {
+    console.error('Server Action: Failed to save journal entry.', error);
+    // Re-throw the error to be caught by the client-side try/catch block
+    throw new Error('Failed to save journal entry to the database.');
+  }
 }

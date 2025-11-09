@@ -87,7 +87,6 @@ export function AiKnoxClient() {
     }
     
     setIsSaving(true);
-    console.log("Checking save parameters - User ID:", firebaseUser.uid);
     try {
       await saveJournalEntry({ content: journalContent, userId: firebaseUser.uid });
       setLastSavedEntry(journalContent);
@@ -175,7 +174,7 @@ export function AiKnoxClient() {
               />
           </CardContent>
           <CardFooter className="justify-end">
-            <Button onClick={handleSaveToVault} disabled={isSaving} className="shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground">
+            <Button onClick={handleSaveToVault} disabled={isSaving || !journalContent.trim()} className="shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground">
               {isSaving ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
