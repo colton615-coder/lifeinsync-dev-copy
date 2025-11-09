@@ -47,13 +47,12 @@ export type ClientExercise = Exercise & {
   category: 'Warm-up' | 'Work' | 'Cool-down' | 'Rest';
 };
 
-const WorkoutPlanSchema = z.object({
-  name: z.string(),
-  focus: z.string(),
-  exercises: z.array(z.any()), // We will manually construct and type this array.
-});
-export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema> & { exercises: ClientExercise[] };
-
+// This type is what the flow will ultimately return.
+export type WorkoutPlan = {
+  name: string;
+  focus: string;
+  exercises: ClientExercise[];
+};
 
 export async function generateWorkoutPlan(input: WorkoutGeneratorInput): Promise<WorkoutPlan> {
   return workoutGeneratorFlow(input);
@@ -89,7 +88,7 @@ const workoutGeneratorFlow = ai.defineFlow(
   {
     name: 'workoutGeneratorFlow',
     inputSchema: WorkoutGeneratorInputSchema,
-    outputSchema: WorkoutPlanSchema,
+    outputSchema: z.custom<WorkoutPlan>(),
   },
   async (input): Promise<WorkoutPlan> => {
     // 1. Get the structured plan from the AI (which may include sets).
@@ -137,8 +136,8 @@ const workoutGeneratorFlow = ai.defineFlow(
         unrolledExercises.push({
           ...baseExerciseData,
           type: aiExercise.type,
-          duration: aiExercise.duration,
-          reps: aiExercise.reps,
+          duration: aiExercise.duration || baseExerciseData.defaultDuration,
+          reps: aiExercise.reps || baseExerciseData.defaultReps,
           sets: aiExercise.sets === 1 ? '1/1' : undefined,
           category: category
         });

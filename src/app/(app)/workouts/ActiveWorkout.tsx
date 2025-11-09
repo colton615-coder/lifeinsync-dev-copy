@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import type { WorkoutPlan } from '@/ai/flows/workout-generator';
+import type { WorkoutPlan, ClientExercise } from '@/ai/flows/workout-generator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PauseCircle, PlayCircle, SkipForward, XCircle, Info, Check } from 'lucide-react';
@@ -13,7 +13,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 
 interface ActiveWorkoutProps {
   workout: WorkoutPlan;
@@ -44,7 +45,8 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isPaused, isPauseModalOpen, currentExercise.type]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft, isPaused, isPauseModalOpen, currentExercise.type, currentExerciseIndex]);
 
   // When exercise changes, reset the state for the new one.
   useEffect(() => {
@@ -103,8 +105,8 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
         <header className="flex flex-col items-center w-full px-4">
           <div className="flex justify-between items-center w-full max-w-md">
             <div className="flex-1 text-left">
-                 <p className="font-semibold text-accent">{currentExercise.category}</p>
-                 {isRepBased && currentExercise.sets && <p className="text-sm font-bold text-muted-foreground">Set {currentExercise.sets}</p>}
+                 <p className="font-semibold text-accent text-shadow">{currentExercise.category}</p>
+                 {isRepBased && currentExercise.sets && <p className="text-sm font-bold text-muted-foreground text-shadow">Set {currentExercise.sets}</p>}
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold font-headline text-shadow-lg text-center flex-shrink-0 mx-4">{currentExercise.name}</h1>
             <div className="flex-1 text-right">
@@ -116,7 +118,7 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
         </header>
 
         {isRepBased ? (
-            <div className="relative flex items-center justify-center my-8">
+            <div className="relative flex flex-col items-center justify-center my-8">
                 <div className="font-mono text-7xl sm:text-8xl font-bold text-shadow-lg">
                     {currentExercise.reps}
                     <span className="text-4xl sm:text-5xl ml-2 text-muted-foreground">Reps</span>
@@ -125,7 +127,7 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
         ) : (
             <div className="relative flex items-center justify-center my-8">
                 <svg className="w-64 h-64 sm:w-72 sm:h-72 transform -rotate-90">
-                    <circle cx="50%" cy="50%" r="120" stroke="hsl(var(--muted) / 0.5)" strokeWidth="10" fill="transparent" className="sm:r-[136px]" />
+                    <circle cx="50%" cy="50%" r="120" stroke="hsl(var(--muted) / 0.2)" strokeWidth="10" fill="transparent" className="sm:r-[136px]" />
                     <circle cx="50%" cy="50%" r="120" stroke="hsl(var(--accent))" strokeWidth="10" fill="transparent"
                         strokeDasharray={2 * Math.PI * 120} strokeDashoffset={(2 * Math.PI * 120) * (1 - (timerProgress / 100))}
                         className="transition-all duration-1000 ease-linear sm:r-[136px]" style={{ strokeLinecap: 'round' }} />
@@ -187,16 +189,33 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
       </Dialog>
       
       <Sheet open={isInstructionsSheetOpen} onOpenChange={setIsInstructionsSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-lg bg-background/95 backdrop-blur-lg">
+        <SheetContent side="bottom" className="h-4/5 rounded-t-lg bg-background/95 backdrop-blur-lg border-t border-border">
             <SheetHeader>
-                <SheetTitle className="text-2xl mb-4">{currentExercise.name}</SheetTitle>
+                <SheetTitle className="text-3xl text-center mb-4">{currentExercise.name}</SheetTitle>
             </SheetHeader>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-1 rounded-lg overflow-hidden h-48 md:h-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full overflow-y-auto px-2 pb-8">
+                <div className="rounded-lg overflow-hidden h-64 md:h-auto aspect-square self-center">
                      <ExerciseImage asset={currentExercise.asset} name={currentExercise.name} alt={currentExercise.name} className="w-full h-full object-cover"/>
                 </div>
-                <div className="md:col-span-2">
-                    <SheetDescription className="text-base text-foreground whitespace-pre-line">{currentExercise.instructions}</SheetDescription>
+                <div className="space-y-6">
+                    <div>
+                        <h3 className="font-semibold text-xl text-accent mb-2">Instructions</h3>
+                        <p className="text-base text-foreground/90 whitespace-pre-line">{currentExercise.instructions.summary}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                       <h3 className="font-semibold text-xl text-accent mb-3">Key Points</h3>
+                       <ul className="space-y-3">
+                        {currentExercise.instructions.keyPoints.map((point, index) => (
+                            <li key={index} className="flex items-start gap-3">
+                                <div className="w-5 h-5 flex-shrink-0 rounded-full bg-accent/20 text-accent flex items-center justify-center mt-0.5">
+                                    <Check size={14}/>
+                                </div>
+                                <span className="text-foreground/90">{point}</span>
+                            </li>
+                        ))}
+                       </ul>
+                    </div>
                 </div>
             </div>
         </SheetContent>

@@ -4,7 +4,10 @@ export type Exercise = {
   id: string; // e.g., 'push-ups'
   name: string;
   asset: ExerciseAsset;
-  instructions: string; // e.g., "Keep your back straight and core engaged..."
+  instructions: {
+    summary: string;
+    keyPoints: string[];
+  };
   defaultType: 'time' | 'reps';
   defaultDuration?: number; // e.g., 60 (in seconds)
   defaultReps?: number;     // e.g., 10
@@ -25,7 +28,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'jumping-jacks',
     name: 'Jumping Jacks',
     asset: { type: 'api', value: 'jumping jacks' },
-    instructions: 'Stand with your feet together and your arms at your sides. In one motion, jump your feet out to the side and raise your arms above your head. Immediately reverse the motion to return to the starting position.',
+    instructions: {
+      summary: 'A full-body cardio exercise that involves jumping to a position with the legs spread wide and the hands touching overhead.',
+      keyPoints: [
+        'Stand with feet together and arms at your sides.',
+        'In one motion, jump your feet out and raise your arms above your head.',
+        'Land softly on the balls of your feet.',
+        'Immediately reverse the motion to return to the starting position.'
+      ]
+    },
     defaultType: 'time',
     defaultDuration: 45,
   },
@@ -33,7 +44,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'push-ups',
     name: 'Push-ups',
     asset: { type: 'api', value: 'push-up fitness' },
-    instructions: 'Start in a high plank position. Lower your body until your chest is just above the floor, keeping your back straight. Push back up to the starting position.',
+    instructions: {
+      summary: 'A classic bodyweight exercise that strengthens the chest, shoulders, and triceps.',
+      keyPoints: [
+        'Start in a high plank position with hands shoulder-width apart.',
+        'Keep your back straight and core engaged throughout.',
+        'Lower your body until your chest is just above the floor.',
+        'Push back up to the starting position with explosive force.'
+      ]
+    },
     defaultType: 'reps',
     defaultReps: 10,
     defaultSets: 3,
@@ -42,7 +61,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'arm-circles',
     name: 'Arm Circles',
     asset: { type: 'api', value: 'arm circle exercise' },
-    instructions: 'Extend your arms straight out to your sides, parallel to the floor. Make small, controlled circles with your hands. Reverse direction halfway through.',
+    instructions: {
+      summary: 'A simple warm-up exercise to increase mobility in the shoulder joints.',
+      keyPoints: [
+        'Extend your arms straight out to your sides, parallel to the floor.',
+        'Make small, controlled circles with your hands.',
+        'Keep your arms straight and your movements controlled.',
+        'Reverse direction halfway through the set.'
+      ]
+    },
     defaultType: 'time',
     defaultDuration: 30,
   },
@@ -50,15 +77,31 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'dynamic-chest-stretch',
     name: 'Dynamic Chest Stretch',
     asset: { type: 'api', value: 'chest stretch' },
-    instructions: 'Stand with your feet shoulder-width apart. Swing both arms open wide, feeling a stretch in your chest, then swing them closed, crossing them in front of your body.',
+    instructions: {
+      summary: 'A dynamic stretch to warm up the chest and shoulder muscles.',
+      keyPoints: [
+        'Stand with your feet shoulder-width apart.',
+        'Swing both arms open wide, feeling a stretch in your chest.',
+        'Swing them closed, crossing them in front of your body.',
+        'Maintain a rhythmic, controlled motion.'
+      ]
+    },
     defaultType: 'time',
     defaultDuration: 30,
   },
   'scapular-retractions': {
     id: 'scapular-retractions',
     name: 'Scapular Retractions',
-    asset: { type: 'api', value: 'back exercise' },
-    instructions: 'Stand or sit with a straight back. Without bending your arms, squeeze your shoulder blades together as if you are trying to hold a pencil between them. Hold for a moment, then release.',
+    asset: { type: 'initials', value: 'SR' },
+    instructions: {
+      summary: 'An exercise to activate and strengthen the muscles of the upper back.',
+      keyPoints: [
+        'Stand or sit with a straight back, arms relaxed.',
+        'Without bending your arms, squeeze your shoulder blades together.',
+        'Imagine you are trying to hold a pencil between them.',
+        'Hold the squeeze for a moment, then release.'
+      ]
+    },
     defaultType: 'reps',
     defaultReps: 15,
     defaultSets: 2,
@@ -67,7 +110,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'squats',
     name: 'Squats',
     asset: { type: 'api', value: 'squat workout' },
-    instructions: 'Stand with your feet shoulder-width apart. Lower your hips as if sitting back in a chair, keeping your chest up and back straight. Go as low as you comfortably can, then push through your heels to return to the start.',
+    instructions: {
+      summary: 'A fundamental compound exercise that targets the thighs, hips, and glutes.',
+      keyPoints: [
+        'Stand with feet shoulder-width apart, toes pointing slightly out.',
+        'Keep your chest up and back straight as you lower your hips.',
+        'Lower as if sitting back in a chair, aiming for thighs parallel to the floor.',
+        'Push through your heels to return to the starting position.'
+      ]
+    },
     defaultType: 'reps',
     defaultReps: 12,
     defaultSets: 3,
@@ -76,7 +127,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'lunges',
     name: 'Lunges',
     asset: { type: 'api', value: 'lunge workout' },
-    instructions: 'Step forward with one leg and lower your hips until both knees are bent at a 90-degree angle. Your front knee should be directly above your ankle. Push off your front foot to return to the starting position. Alternate legs.',
+    instructions: {
+      summary: 'A unilateral exercise that strengthens the legs and improves balance.',
+      keyPoints: [
+        'Step forward with one leg, lowering your hips until both knees are at a 90-degree angle.',
+        'Ensure your front knee is directly above your ankle.',
+        'Keep your back straight and core engaged.',
+        'Push off your front foot to return to the start and alternate legs.'
+      ]
+    },
     defaultType: 'reps',
     defaultReps: 10, // Per leg
     defaultSets: 3,
@@ -85,7 +144,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'plank',
     name: 'Plank',
     asset: { type: 'api', value: 'plank exercise' },
-    instructions: 'Hold a push-up position, with your body forming a straight line from your head to your heels. Engage your core and glutes. Hold this position without letting your hips sag.',
+    instructions: {
+      summary: 'An isometric core exercise that involves maintaining a position similar to a push-up.',
+      keyPoints: [
+        'Hold a push-up position, either on your hands or forearms.',
+        'Your body should form a straight line from your head to your heels.',
+        'Engage your core and glutes to prevent your hips from sagging.',
+        'Breathe steadily throughout the hold.'
+      ]
+    },
     defaultType: 'time',
     defaultDuration: 60,
   },
@@ -93,7 +160,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'crunches',
     name: 'Crunches',
     asset: { type: 'api', value: 'crunches ab workout' },
-    instructions: 'Lie on your back with your knees bent and feet flat on the floor. Place your hands behind your head. Lift your head and shoulders off the floor, engaging your abs. Lower back down with control.',
+    instructions: {
+      summary: 'A classic abdominal exercise that targets the rectus abdominis muscle.',
+      keyPoints: [
+        'Lie on your back with your knees bent and feet flat on the floor.',
+        'Place your hands behind your head, without pulling on your neck.',
+        'Lift your head and shoulders off the floor, using your abs.',
+        'Lower back down with control, not just dropping.'
+      ]
+    },
     defaultType: 'reps',
     defaultReps: 20,
     defaultSets: 3,
@@ -102,7 +177,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'burpees',
     name: 'Burpees',
     asset: { type: 'api', value: 'burpee exercise' },
-    instructions: 'Start standing, then drop into a squat and place your hands on the floor. Kick your feet back into a plank position, perform a push-up, then jump your feet back to the squat position. Explode up into a jump, clapping your hands overhead.',
+    instructions: {
+      summary: 'A full-body, high-intensity exercise that combines a squat, push-up, and jump.',
+      keyPoints: [
+        'From standing, drop into a squat and place your hands on the floor.',
+        'Kick your feet back to a plank and perform a push-up.',
+        'Jump your feet back to the squat position.',
+        'Explode up into a jump, clapping your hands overhead.'
+      ]
+    },
     defaultType: 'reps',
     defaultReps: 10,
     defaultSets: 3,
@@ -111,7 +194,15 @@ export const exerciseLibrary: Record<string, Exercise> = {
     id: 'rest',
     name: 'Rest',
     asset: { type: 'initials', value: 'R' },
-    instructions: 'Breathe and prepare for the next exercise. Take this time to recover, sip some water if needed, and focus on your form for the upcoming set.',
+    instructions: {
+      summary: 'Recovery is a crucial part of your workout. Use this time to regulate your breathing and prepare for the next exercise.',
+      keyPoints: [
+        'Breathe deeply and slowly.',
+        'Take a sip of water if needed.',
+        'Mentally prepare for the next movement.',
+        'Stay loose, but ready.'
+      ]
+    },
     defaultType: 'time',
     defaultDuration: 60,
   },

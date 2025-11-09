@@ -13,15 +13,15 @@ interface ExerciseImageProps {
 }
 
 // Helper to generate a consistent color from a string
-const nameToColor = (name: string) => {
+const nameToHsl = (name: string) => {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const color = `hsl(${hash % 360}, 50%, 70%)`;
-  const bgColor = `hsl(${hash % 360}, 50%, 20%)`;
-  return { color, bgColor };
+  const h = hash % 360;
+  return `hsl(${h}, 30%, 25%)`;
 };
+
 
 export function ExerciseImage({ asset, name, className, alt }: ExerciseImageProps) {
   const [currentAsset, setCurrentAsset] = useState(asset);
@@ -60,21 +60,21 @@ export function ExerciseImage({ asset, name, className, alt }: ExerciseImageProp
       );
     
     case 'initials':
-      const { color, bgColor } = nameToColor(name);
+        const backgroundColor = nameToHsl(name);
+        const gradient = `linear-gradient(145deg, ${backgroundColor}, hsl(${parseInt(backgroundColor.slice(4, 7)) + 20}, 35%, 15%))`;
       return (
         <div
           className={cn(
-            "flex items-center justify-center font-bold text-4xl aspect-square w-full",
+            "flex items-center justify-center font-headline font-bold text-6xl text-white/80 aspect-square w-full text-shadow-lg",
             className
           )}
-          style={{ backgroundColor: bgColor, color: color }}
+          style={{ background: gradient }}
         >
           {finalAsset.value}
         </div>
       );
     
-    // Note: 'gif' type is not used for now, but the structure is here for the future.
-    case 'gif':
+    case 'gif': // This case now points to a local placeholder if needed
     default:
        // Fallback to API if gif is specified but fails (or isn't implemented)
       return (
