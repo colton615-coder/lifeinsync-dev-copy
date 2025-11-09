@@ -82,11 +82,12 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
     <>
       <div className="fixed inset-0 w-full h-full">
         <Image
-          src={currentExercise.videoUrl}
+          src={currentExercise.gifUrl}
           alt={currentExercise.name}
           layout="fill"
           objectFit="cover"
           className="opacity-20"
+          unoptimized={true} // Important for GIFs
           data-ai-hint="exercise video"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
@@ -178,5 +179,3 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
     </>
   );
 }
-
-    

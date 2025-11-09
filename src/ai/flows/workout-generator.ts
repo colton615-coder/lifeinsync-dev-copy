@@ -9,8 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-
+import { exerciseLibrary } from '@/lib/exerciseDatabase';
 
 const WorkoutGeneratorInputSchema = z.object({
   prompt: z
@@ -19,19 +18,35 @@ const WorkoutGeneratorInputSchema = z.object({
 });
 export type WorkoutGeneratorInput = z.infer<typeof WorkoutGeneratorInputSchema>;
 
-const ExerciseSchema = z.object({
-  name: z.string().describe("The name of the exercise."),
-  description: z.string().describe("A short, clear description of how to perform the exercise."),
-  duration: z.number().describe("The duration of the exercise in seconds."),
-  reps: z.number().optional().describe("Number of repetitions, if applicable. Time-based exercises won't have this."),
-  category: z.enum(['Warm-up', 'Work', 'Cool-down', 'Rest']).describe("The category of the exercise."),
-  videoUrl: z.string().url().describe("A placeholder URL for a video of the exercise."),
+
+// This is the schema the AI will now output. It's simpler.
+const AIExerciseSchema = z.object({
+    exerciseId: z.string().describe("The unique ID of the exercise from the provided library (e.g., 'push-ups', 'rest')."),
+    duration: z.number().describe("The duration of the exercise in seconds."),
+    category: z.enum(['Warm-up', 'Work', 'Cool-down', 'Rest']).describe("The category of the exercise."),
+});
+
+
+const AIWorkoutPlanSchema = z.object({
+  name: z.string().describe('A catchy and descriptive name for the generated workout plan. e.g. "Core Crusher"'),
+  focus: z.string().describe("The main focus of the workout, e.g., 'Upper Body', 'Core', 'Full Body Cardio'."),
+  exercises: z.array(AIExerciseSchema).describe("An array of exercises that make up the workout plan, referencing the exercise library."),
+});
+
+
+// This is the rich object we will send to the client.
+const ClientExerciseSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  duration: z.number(),
+  category: z.enum(['Warm-up', 'Work', 'Cool-down', 'Rest']),
+  gifUrl: z.string().url(),
 });
 
 const WorkoutPlanSchema = z.object({
-  name: z.string().describe('A catchy and descriptive name for the generated workout plan. e.g. "Core Crusher"'),
-  focus: z.string().describe("The main focus of the workout, e.g., 'Upper Body', 'Core', 'Full Body Cardio'."),
-  exercises: z.array(ExerciseSchema).describe("An array of exercises that make up the workout plan."),
+  name: z.string(),
+  focus: z.string(),
+  exercises: z.array(ClientExerciseSchema),
 });
 export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema>;
 
@@ -39,25 +54,21 @@ export async function generateWorkoutPlan(input: WorkoutGeneratorInput): Promise
   return workoutGeneratorFlow(input);
 }
 
-const videoUrls = PlaceHolderImages.filter(img => img.id.startsWith("exercise-")).map(img => img.imageUrl);
+// We provide the library of available exercises to the AI.
+const availableExercises = Object.keys(exerciseLibrary);
 
 const prompt = ai.definePrompt({
   name: 'workoutGeneratorPrompt',
-  input: {schema: WorkoutGeneratorInputSchema},
-  output: {schema: WorkoutPlanSchema},
+  input: {schema: z.object({ prompt: WorkoutGeneratorInputSchema.shape.prompt, availableExercises: z.array(z.string()) })},
+  output: {schema: AIWorkoutPlanSchema},
   prompt: `You are a world-class fitness coach. Your task is to create a complete, structured workout plan based on the user's request. The plan must be logical and include a warm-up, the main work, and a cool-down.
 
-  The plan must have a descriptive name and a clear focus (e.g., 'Upper Body Strength').
+  You MUST select exercises exclusively from the following library of available exercise IDs. Do not invent new exercises. Always include 'rest' periods between work sets.
   
-  The 'exercises' array should contain a series of exercises. Each exercise must include:
-  - A 'name' (e.g., "Jumping Jacks", "Push-ups", "Rest").
-  - A brief 'description' of how to perform it.
-  - A 'duration' in seconds (e.g., 30, 45, 60). For 'Rest' periods, use a reasonable duration like 15-30 seconds.
-  - A 'category': 'Warm-up', 'Work', 'Cool-down', or 'Rest'.
-  - A 'videoUrl': You must assign one of the following placeholder video URLs to each exercise. Distribute them logically.
-    {{#each videoUrls}}
-    - {{this}}
-    {{/each}}
+  Available Exercise IDs:
+  {{#each availableExercises}}
+  - {{this}}
+  {{/each}}
   
   Generate a workout based on the following prompt:
   "{{{prompt}}}"
@@ -72,10 +83,36 @@ const workoutGeneratorFlow = ai.defineFlow(
     inputSchema: WorkoutGeneratorInputSchema,
     outputSchema: WorkoutPlanSchema,
   },
-  async input => {
-    const {output} = await prompt({ ...input, videoUrls });
-    return output!;
+  async (input) => {
+    // 1. Get the structured plan from the AI (with exercise IDs)
+    const { output: aiPlan } = await prompt({ ...input, availableExercises });
+    if (!aiPlan) {
+        throw new Error("AI failed to generate a workout plan.");
+    }
+
+    // 2. Map the AI-generated plan to our rich client-side plan
+    const clientExercises = aiPlan.exercises.map(aiExercise => {
+      const exerciseData = exerciseLibrary[aiExercise.exerciseId];
+      if (!exerciseData) {
+        // Fallback in case the AI hallucinates an ID
+        console.warn(`AI generated an unknown exerciseId: ${aiExercise.exerciseId}. Falling back to 'rest'.`);
+        return {
+          ...exerciseLibrary.rest,
+          duration: aiExercise.duration,
+          category: 'Rest',
+        };
+      }
+      return {
+        ...exerciseData,
+        duration: aiExercise.duration,
+        category: aiExercise.category,
+      };
+    });
+
+    return {
+      name: aiPlan.name,
+      focus: aiPlan.focus,
+      exercises: clientExercises,
+    };
   }
 );
-
-    

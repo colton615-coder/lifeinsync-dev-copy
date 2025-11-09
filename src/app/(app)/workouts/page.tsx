@@ -136,19 +136,20 @@ export default function WorkoutsPage() {
               {workout.exercises.map((ex, index) => (
                 <Card key={`${ex.name}-${index}`} className="flex items-center gap-4 p-3 bg-background shadow-neumorphic-inset">
                   <Image
-                      src={ex.videoUrl}
+                      src={ex.gifUrl}
                       alt={ex.name}
                       width={80}
                       height={80}
                       className="rounded-md object-cover aspect-square bg-muted"
-                      data-ai-hint="exercise video"
+                      unoptimized={true} // Important for GIFs
+                      data-ai-hint="exercise"
                     />
                   <div className="flex-grow">
                     <p className="font-semibold">{ex.name}</p>
                     <p className="text-xs text-muted-foreground">{ex.category}</p>
                   </div>
                   <span className="text-lg font-semibold text-muted-foreground">
-                    {ex.reps ? `${ex.reps} reps` : `${ex.duration}s`}
+                    {ex.duration}s
                   </span>
                 </Card>
               ))}
@@ -165,5 +166,3 @@ export default function WorkoutsPage() {
     </div>
   );
 }
-
-    
