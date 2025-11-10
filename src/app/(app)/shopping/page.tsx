@@ -2,6 +2,8 @@
 import { useState, useMemo, FormEvent } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -103,9 +105,15 @@ export default function ShoppingListPage() {
             {title}
         </h3>
         <div className="space-y-4">
-            {list.length > 0 ? list.map(item => (
-            <div
+            <AnimatePresence>
+            {list.map(item => (
+            <motion.div
                 key={item.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -50, transition: { duration: 0.2 } }}
+                transition={{ duration: 0.3 }}
                 className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
             >
                 <div className="flex items-center gap-4">
@@ -128,11 +136,15 @@ export default function ShoppingListPage() {
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => deleteItem(item)}>
                 <Trash2 size={16} />
                 </Button>
-            </div>
-            )) : type === 'needed' ? (
-                <p className="text-muted-foreground text-center py-4 text-sm">Your list is empty. Add an item above to get started!</p>
-            ) : (
-                <p className="text-muted-foreground text-center py-4 text-sm">Move items here by checking them off your list.</p>
+            </motion.div>
+            ))}
+            </AnimatePresence>
+            {list.length === 0 && (
+                type === 'needed' ? (
+                    <p className="text-muted-foreground text-center py-4 text-sm">Your list is empty. Add an item above to get started!</p>
+                ) : (
+                    <p className="text-muted-foreground text-center py-4 text-sm">Move items here by checking them off your list.</p>
+                )
             )}
         </div>
      </div>

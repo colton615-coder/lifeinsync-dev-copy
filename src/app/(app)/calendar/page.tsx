@@ -3,6 +3,8 @@ import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { PlusCircle, Dot, Loader2, Trash2, CalendarDays } from 'lucide-react';
@@ -159,11 +161,22 @@ export default function CalendarPage() {
                     <Skeleton className="h-12 w-full" />
                  </div>
               ): selectedDayEvents.length > 0 ? (
-                selectedDayEvents.map((event) => (
-                  <div key={event.id} onClick={() => openEventDetails(event)} className="p-3 rounded-md bg-background shadow-neumorphic-inset cursor-pointer hover:bg-accent/10 transition-colors">
-                    <p className="font-medium text-foreground">{event.title}</p>
-                  </div>
-                ))
+                 <AnimatePresence>
+                    {selectedDayEvents.map((event) => (
+                      <motion.div
+                        key={event.id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        transition={{ duration: 0.3 }}
+                        onClick={() => openEventDetails(event)} 
+                        className="p-3 rounded-md bg-background shadow-neumorphic-inset cursor-pointer hover:bg-accent/10 transition-colors"
+                      >
+                        <p className="font-medium text-foreground">{event.title}</p>
+                      </motion.div>
+                    ))}
+                 </AnimatePresence>
               ) : (
                 <EmptyStateCTA
                   icon={<CalendarDays size={32} />}

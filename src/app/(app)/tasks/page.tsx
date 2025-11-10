@@ -2,6 +2,7 @@
 import { useState, useMemo, FormEvent } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -124,9 +125,15 @@ export default function TasksPage() {
             {title}
         </h3>
         <div className="space-y-4">
+          <AnimatePresence>
             {list.map(task => (
-            <div
+            <motion.div
                 key={task.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -50, transition: { duration: 0.2 } }}
+                transition={{ duration: 0.3 }}
                 className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset"
             >
                 <div className="flex items-center gap-4">
@@ -154,8 +161,9 @@ export default function TasksPage() {
                     <Trash2 size={16}/>
                 </Button>
                 </div>
-            </div>
+            </motion.div>
             ))}
+            </AnimatePresence>
              {list.length === 0 && <p className="text-muted-foreground text-center py-4 text-sm">Nothing here!</p>}
         </div>
     </div>

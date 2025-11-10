@@ -15,6 +15,7 @@ import { getHabitFeedback, fetchProactiveSuggestions, fetchInteractiveSuggestion
 import * as LucideIcons from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 import { useDebouncedCallback } from 'use-debounce';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -144,13 +145,7 @@ export default function HabitsPage() {
   const { data: habits, isLoading: isLoadingHabits } = useCollection<Habit>(habitsCollection);
   const { data: recentJournalEntries } = useCollection<JournalEntry>(journalEntriesQuery);
   
-  const sevenDaysAgo = useMemo(() => format(subDays(new Date(), 7), 'yyyy-MM-dd'), []);
-  const habitHistoryQuery = useMemoFirebase(() => {
-    if (!habitLogsCollection) return null;
-    return query(habitLogsCollection, where('__name__', '>=', sevenDaysAgo));
-  }, [habitLogsCollection, sevenDaysAgo]);
-
-  const { data: habitHistory, isLoading: isLoadingHistory } = useCollection<DailyLog>(habitHistoryQuery);
+  const { data: habitHistory, isLoading: isLoadingHistory } = useCollection<DailyLog>(habitLogsCollection);
   
   const todayLog = useMemo(() => habitHistory?.find(log => log.id === todayStr) ?? null, [habitHistory, todayStr]);
   const isLoadingLog = isLoadingHistory;
@@ -431,31 +426,42 @@ export default function HabitsPage() {
                 }
               />
             ) : (
-              combinedHabits.map((habit) => (
-                <div key={habit.id} className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset">
-                  <div className="flex items-center gap-4">
-                    <Checkbox id={habit.id} checked={habit.done} onCheckedChange={() => handleHabitToggle(habit)} className="h-6 w-6 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"/>
-                    <div className="flex items-center gap-3">
-                       <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${habit.color}33`, color: habit.color, border: `1px solid ${habit.color}50` }}>
-                          <Icon name={habit.icon} className="h-6 w-6" />
-                       </div>
-                       <div>
-                          <label htmlFor={habit.id} className="text-md font-medium leading-none">{habit.name}</label>
-                          <p className="text-sm text-muted-foreground">{getFrequencyText(habit.frequency)}</p>
-                        </div>
+              <AnimatePresence>
+              {combinedHabits.map((habit) => (
+                <motion.div 
+                  key={habit.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset">
+                    <div className="flex items-center gap-4">
+                      <Checkbox id={habit.id} checked={habit.done} onCheckedChange={() => handleHabitToggle(habit)} className="h-6 w-6 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground border-accent"/>
+                      <div className="flex items-center gap-3">
+                         <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${habit.color}33`, color: habit.color, border: `1px solid ${habit.color}50` }}>
+                            <Icon name={habit.icon} className="h-6 w-6" />
+                         </div>
+                         <div>
+                            <label htmlFor={habit.id} className="text-md font-medium leading-none">{habit.name}</label>
+                            <p className="text-sm text-muted-foreground">{getFrequencyText(habit.frequency)}</p>
+                          </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 text-accent">
+                        <Flame className="h-5 w-5" />
+                        <span className="font-semibold text-lg">{habit.streak}</span>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteHabit(habit.id)}>
+                        <Trash2 size={16}/>
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-accent">
-                      <Flame className="h-5 w-5" />
-                      <span className="font-semibold text-lg">{habit.streak}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteHabit(habit.id)}>
-                      <Trash2 size={16}/>
-                    </Button>
-                  </div>
-                </div>
-              ))
+                </motion.div>
+              ))}
+              </AnimatePresence>
             )}
           </div>
         </CardContent>
@@ -596,5 +602,3 @@ export default function HabitsPage() {
     </div>
   );
 }
-
-    

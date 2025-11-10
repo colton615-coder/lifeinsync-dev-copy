@@ -5,6 +5,7 @@ import { collection, query, serverTimestamp, doc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { getBudgetSuggestions } from './actions';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -387,8 +388,17 @@ export default function FinancePage() {
                 {isLoading ? (
                     [...Array(2)].map((_, i) => <Skeleton key={i} className="h-40 w-full rounded-lg" />)
                 ) : (
-                    budgetsWithSpending.map(budget => (
-                        <Card key={budget.id} className="shadow-neumorphic-outset">
+                    <AnimatePresence>
+                    {budgetsWithSpending.map(budget => (
+                        <motion.div 
+                          key={budget.id}
+                          layout
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -50 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                        <Card className="shadow-neumorphic-outset">
                             <CardHeader>
                                 <CardTitle className="flex justify-between items-start">
                                     <span>{budget.name}</span>
@@ -418,7 +428,9 @@ export default function FinancePage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))
+                        </motion.div>
+                    ))}
+                    </AnimatePresence>
                 )}
             </div>
             <FinanceChart data={monthlySpending} />
@@ -506,5 +518,3 @@ export default function FinancePage() {
     </div>
   );
 }
-
-    
