@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -183,5 +182,3 @@ export default function WorkoutsPage() {
     </div>
   );
 }
-
-    

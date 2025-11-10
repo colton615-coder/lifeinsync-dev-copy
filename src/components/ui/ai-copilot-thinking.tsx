@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -66,5 +65,3 @@ export function AICoPilotThinking({ steps, onComplete, durationPerStep = 2000 }:
     </Card>
   );
 }
-
-    

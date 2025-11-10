@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useTransition, useEffect, FormEvent } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
@@ -219,6 +218,9 @@ export default function FinancePage() {
 
   const handleAiAnalysis = () => {
     setShowAiThinking(true);
+    setAiFeedback('');
+    setAiSuggestions([]);
+
     startAiTransition(async () => {
       const formattedExpenses = expenses?.map(e => ({
         description: e.description,
@@ -234,15 +236,13 @@ export default function FinancePage() {
         existingBudgets: existingCategories,
       });
       
-      setShowAiThinking(false);
-
       if ('error' in result) {
         toast({ variant: 'destructive', title: 'AI Analysis Failed', description: result.error });
-        setAiFeedback('');
-        setAiSuggestions([]);
+        setShowAiThinking(false);
       } else {
         setAiFeedback(result.feedback);
         setAiSuggestions(result.suggestions);
+        // The onComplete callback in AICoPilotThinking will handle hiding the animation
       }
     });
   };
@@ -369,7 +369,7 @@ export default function FinancePage() {
                 {showAiThinking ? (
                     <AICoPilotThinking 
                         steps={AI_ANALYSIS_STEPS}
-                        onComplete={() => {}} 
+                        onComplete={() => setShowAiThinking(false)} 
                         durationPerStep={1200}
                     />
                 ) : aiFeedback ? (
@@ -387,7 +387,7 @@ export default function FinancePage() {
                 ) : null}
             </CardContent>
             <CardFooter>
-                 <Button onClick={handleAiAnalysis} variant="ghost" className="text-accent" disabled={isAnalyzing || isLoadingExpenses || showAiThinking}>
+                 <Button onClick={handleAiAnalysis} variant="ghost" className="text-accent" disabled={isAnalyzing || isLoadingExpenses}>
                     {isAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Wand2 className="mr-2 h-4 w-4" />}
                     {isAnalyzing ? 'Analyzing...' : 'Analyze & Suggest Budgets'}
                  </Button>
@@ -529,5 +529,3 @@ export default function FinancePage() {
     </div>
   );
 }
-
-    
