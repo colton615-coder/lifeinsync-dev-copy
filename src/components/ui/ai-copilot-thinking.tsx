@@ -66,3 +66,5 @@ export function AICoPilotThinking({ steps, onComplete, durationPerStep = 2000 }:
     </Card>
   );
 }
+
+    

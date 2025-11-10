@@ -369,7 +369,7 @@ export default function FinancePage() {
                 {showAiThinking ? (
                     <AICoPilotThinking 
                         steps={AI_ANALYSIS_STEPS}
-                        onComplete={() => {}} // The transition handles moving to the next state
+                        onComplete={() => {}} 
                         durationPerStep={1200}
                     />
                 ) : aiFeedback ? (
@@ -529,3 +529,5 @@ export default function FinancePage() {
     </div>
   );
 }
+
+    
