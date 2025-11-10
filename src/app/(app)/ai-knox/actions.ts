@@ -14,8 +14,7 @@ export async function getDailyPrompt(): Promise<JournalPromptOutput> {
   try {
     const result = await generateJournalPrompt({});
     return result;
-  } catch (error) {
-    console.error('Error generating journal prompt:', error);
+  } catch (_error) {
     return { prompt: 'What are you grateful for today?' };
   }
 }
@@ -29,8 +28,7 @@ export async function getAiKnoxResponse(
   try {
     const result = await aiKnoxTherapy({ userInput });
     return result;
-  } catch (error) {
-    console.error('Error getting AI Knox response:', error);
+  } catch (_error) {
     return { error: 'AI Knox is unavailable right now. Please try again later.' };
   }
 }

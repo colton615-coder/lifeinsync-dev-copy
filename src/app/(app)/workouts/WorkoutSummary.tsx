@@ -1,7 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation';
 import type { WorkoutPlan } from '@/ai/flows/workout-generator';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, CalendarPlus, BookHeart, PartyPopper } from 'lucide-react';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';

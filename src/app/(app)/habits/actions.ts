@@ -26,8 +26,7 @@ export async function getHabitFeedback(
   try {
     const result = await getHabitCoaching(input);
     return result;
-  } catch (error) {
-    console.error('Error getting habit feedback:', error);
+  } catch (_error) {
     return { error: 'AI coach is unavailable. Focus on your habits for now.' };
   }
 }
@@ -46,8 +45,7 @@ export async function fetchProactiveSuggestions(
   try {
     const result = await getProactiveSuggestions(input);
     return result;
-  } catch (error) {
-    console.error('Error fetching proactive habit suggestions:', error);
+  } catch (_error) {
     return { suggestions: [] };
   }
 }
@@ -62,8 +60,7 @@ export async function fetchInteractiveSuggestion(
   try {
     const result = await getInteractiveSuggestion(input);
     return result;
-  } catch (error) {
-    console.error('Error fetching interactive habit suggestion:', error);
+  } catch (_error) {
     return { suggestion: undefined };
   }
 }

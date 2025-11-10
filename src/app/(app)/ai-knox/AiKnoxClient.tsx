@@ -111,8 +111,7 @@ export function AiKnoxClient() {
         title: 'Entry Saved',
         description: 'Your journal entry has been secured in your vault.',
       });
-    } catch (e: any) {
-      console.error("Save to Vault Failed (Full Error Object):", e);
+    } catch (_e: any) {
       toast({
         variant: 'destructive',
         title: 'Error',

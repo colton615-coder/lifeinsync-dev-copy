@@ -5,7 +5,6 @@ import {
   BudgetCoachInput,
   BudgetCoachOutput
 } from '@/ai/flows/budget-coach';
-import { error } from 'console';
 
 export async function getBudgetSuggestions(
   input: BudgetCoachInput
@@ -13,8 +12,7 @@ export async function getBudgetSuggestions(
   try {
     const result = await getBudgetCoaching(input);
     return result;
-  } catch(e: any) {
-    console.error("Error getting budget suggestions:", e);
+  } catch (_e: any) {
     return { error: 'AI Financial Coach is unavailable right now. Please try again later.' };
   }
 }

@@ -194,8 +194,7 @@ export default function HabitsPage() {
       }));
       setProactiveSuggestions(normalized);
       
-    } catch (error) {
-      console.error("Proactive AI suggestion failed:", error);
+    } catch (_error) {
       // Fails silently as per requirements
     } finally {
       setIsAiLoading(false);
@@ -219,8 +218,7 @@ export default function HabitsPage() {
       } else {
         setInteractiveSuggestion(null);
       }
-    } catch (error) {
-      console.error("Interactive AI suggestion failed:", error);
+    } catch (_error) {
       setInteractiveSuggestion(null); // Fail silently
     }
   }, 750);

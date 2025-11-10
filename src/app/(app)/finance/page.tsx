@@ -1,7 +1,7 @@
 'use client';
-import { useState, useMemo, useTransition, useEffect, FormEvent } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { collection, query, serverTimestamp, doc } from 'firebase/firestore';
+import { useState, useMemo, useTransition, FormEvent } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp, doc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { getBudgetSuggestions } from './actions';
@@ -84,7 +84,6 @@ export default function FinancePage() {
   // Expense form states
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
   const [newExpenseDescription, setNewExpenseDescription] = useState('');
-  const [newExpenseCategory, setNewExpenseCategory] = useState('other');
   const [targetBudgetId, setTargetBudgetId] = useState('');
   const [isSavingExpense, setIsSavingExpense] = useState(false);
 
@@ -137,8 +136,7 @@ export default function FinancePage() {
       });
       toast({ title: "AI Budget Created!", description: `${budgetData.name} has been added.`});
       setAiSuggestions(s => s.filter(s => s.category !== budgetData.category));
-     } catch (error) {
-       console.error("Failed to add AI budget:", error)
+     } catch (_error) {
        toast({ variant: 'destructive', title: "Creation Failed", description: "Could not save the AI suggested budget." });
      }
   };
@@ -163,8 +161,7 @@ export default function FinancePage() {
         setNewBudgetAmount('');
         setNewBudgetCategory('');
         setIsBudgetDialogOpen(false);
-    } catch (error) {
-        console.error("Failed to save budget:", error);
+    } catch (_error) {
         toast({ variant: 'destructive', title: "Save Failed", description: "Could not save your budget. Please try again." });
     } finally {
         setIsSavingBudget(false);
@@ -197,8 +194,7 @@ export default function FinancePage() {
       setTargetBudgetId('');
       setIsExpenseDialogOpen(false);
       toast({ title: "Expense Logged!", description: `${newExpenseDescription} has been added.`});
-    } catch (error) {
-      console.error("Failed to add expense:", error);
+    } catch (_error) {
       toast({ variant: 'destructive', title: "Save Failed", description: "Could not log your expense. Please try again." });
     } finally {
       setIsSavingExpense(false);
@@ -214,8 +210,7 @@ export default function FinancePage() {
           title: "Budget Deleted",
           description: "The budget has been successfully removed.",
       });
-    } catch (error) {
-      console.error("Failed to delete budget:", error);
+    } catch (_error) {
       toast({ variant: 'destructive', title: "Delete Failed", description: "Could not delete the budget." });
     }
   };

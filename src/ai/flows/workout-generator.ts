@@ -102,7 +102,7 @@ const workoutGeneratorFlow = ai.defineFlow(
     aiPlan.exercises.forEach(aiExercise => {
       const baseExerciseData = exerciseLibrary[aiExercise.exerciseId];
       if (!baseExerciseData) {
-        console.warn(`AI generated an unknown exerciseId: ${aiExercise.exerciseId}. Skipping.`);
+        // Unknown exerciseId; skip this exercise
         return;
       }
       

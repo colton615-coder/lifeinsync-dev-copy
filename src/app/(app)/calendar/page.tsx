@@ -77,8 +77,7 @@ export default function CalendarPage() {
       setNewEventTitle('');
       setNewEventDescription('');
       setIsAddDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to add event:", error);
+    } catch (_error) {
       toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save your event. Please try again.' });
     } finally {
       setIsSaving(false);

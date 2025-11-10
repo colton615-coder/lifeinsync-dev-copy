@@ -21,12 +21,8 @@ export function initializeFirebase() {
       try {
         // Attempt to initialize via Firebase Hosting environment variables
         firebaseApp = initializeApp();
-      } catch (e) {
+      } catch (_e) {
         // If auto-init fails, fall back to explicit config
-        if (process.env.NODE_ENV !== 'production') {
-          // In development, log the error for debugging
-          console.warn('Automatic Firebase initialization failed. Falling back to firebaseConfig.', e);
-        }
         firebaseApp = initializeApp(firebaseConfig);
       }
     } else {
