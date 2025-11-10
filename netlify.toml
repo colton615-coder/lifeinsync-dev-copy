@@ -11,12 +11,6 @@ NODE_VERSION = "20"
 # Enable Next.js optimizations
 NEXT_TELEMETRY_DISABLED = "1"
 
-# Rewrite rules for Next.js
-[[redirects]]
-from = "/*"
-to = "/.netlify/functions/render"
-status = 200
-
 # Enable ISR (Incremental Static Regeneration)
 [[headers]]
 for = "/api/*"
