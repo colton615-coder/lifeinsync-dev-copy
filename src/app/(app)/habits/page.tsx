@@ -148,7 +148,7 @@ export default function HabitsPage() {
   
   const { data: habitHistory, isLoading: isLoadingHistory } = useCollection<DailyLog>(habitLogsCollection);
   
-  todayLog = useMemo(() => habitHistory?.find(log => log.id === todayStr) ?? null, [habitHistory, todayStr]);
+  const todayLog = useMemo(() => habitHistory?.find(log => log.id === todayStr) ?? null, [habitHistory, todayStr]);
   const isLoadingLog = isLoadingHistory;
 
 
@@ -637,5 +637,3 @@ export default function HabitsPage() {
     </div>
   );
 }
-
-    
