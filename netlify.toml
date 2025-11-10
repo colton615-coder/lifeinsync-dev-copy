@@ -3,7 +3,7 @@
 [build]
 command = "npm run build"
 functions = "netlify/functions"
-publish = ".next/public"
+publish = ".next"
 
 [build.environment]
 # Node version
