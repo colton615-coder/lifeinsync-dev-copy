@@ -88,8 +88,6 @@ export default function FinancePage() {
 
   const expensesCollection = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    // NOTE: This query gets ALL expenses across ALL budgets.
-    // For larger apps, querying expenses per budget might be more performant.
     return collection(firestore, 'users', user.uid, 'expenses');
   }, [user, firestore]);
 
@@ -168,7 +166,6 @@ export default function FinancePage() {
 
     setIsSavingExpense(true);
     try {
-      // We now need a reference to the main expenses collection, not a subcollection
       const mainExpensesCollection = collection(firestore, 'users', user.uid, 'expenses');
       await addDocumentNonBlocking(mainExpensesCollection, {
         id: uuidv4(),

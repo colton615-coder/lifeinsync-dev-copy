@@ -9,7 +9,7 @@ import {
   deleteDocumentNonBlocking,
   addDocumentNonBlocking,
 } from '@/firebase';
-import { collection, doc, serverTimestamp, getDocs, query, where, limit, orderBy } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, limit, orderBy } from 'firebase/firestore';
 import { format, isToday, subDays } from 'date-fns';
 import { getHabitFeedback, fetchProactiveSuggestions, fetchInteractiveSuggestion } from './actions';
 import * as LucideIcons from 'lucide-react';
@@ -136,12 +136,13 @@ export default function HabitsPage() {
     return collection(firestore, 'users', user.uid, 'habitLogs');
   }, [user, firestore]);
 
-  const journalEntriesCollection = useMemoFirebase(() => {
+  const journalEntriesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return collection(firestore, 'users', user.uid, 'journalEntries');
+    return query(collection(firestore, 'users', user.uid, 'journalEntries'), orderBy('createdAt', 'desc'), limit(5));
   }, [user, firestore]);
 
   const { data: habits, isLoading: isLoadingHabits } = useCollection<Habit>(habitsCollection);
+  const { data: recentJournalEntries } = useCollection<JournalEntry>(journalEntriesQuery);
   
   const sevenDaysAgo = useMemo(() => format(subDays(new Date(), 7), 'yyyy-MM-dd'), []);
   const habitHistoryQuery = useMemoFirebase(() => {
@@ -179,16 +180,13 @@ export default function HabitsPage() {
   
   // 1. Proactive suggestions based on journal entries
   const handleProactiveSuggestions = async () => {
-    if (!journalEntriesCollection || !habits) return;
+    if (!recentJournalEntries || !habits) return;
     setIsAiLoading(true);
     setProactiveSuggestions([]);
     try {
-      // Fetch the last 5 journal entries
-      const q = query(journalEntriesCollection, orderBy('createdAt', 'desc'), limit(5));
-      const querySnapshot = await getDocs(q);
-      const journalEntries = querySnapshot.docs.map(doc => doc.data().content as string);
-      
+      const journalEntries = recentJournalEntries.map(entry => entry.content);
       const existingHabits = habits.map(h => h.name);
+      
       const result = await fetchProactiveSuggestions({ journalEntries, existingHabits });
       setProactiveSuggestions(result.suggestions);
       
@@ -310,8 +308,10 @@ export default function HabitsPage() {
     const newDoneState = !habit.done;
     let newStreak = habit.streak;
     
-    const newTodayLog = {...(todayLog?.log || {}), [habit.id]: newDoneState };
-    setTodayLog({id: todayStr, log: newTodayLog });
+    // Optimistic update
+    const updatedHabits = combinedHabits?.map(h => 
+      h.id === habit.id ? { ...h, done: newDoneState } : h
+    ) ?? [];
 
     if (newDoneState) {
       const lastCompletedDate = habit.lastCompleted?.toDate();
