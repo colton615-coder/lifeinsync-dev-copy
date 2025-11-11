@@ -452,7 +452,7 @@ export default function FinancePage() {
 
       {/* Budget Dialog */}
       <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
-        <DialogContent className="shadow-neumorphic-outset bg-background border-transparent">
+        <DialogContent open={isBudgetDialogOpen} className="shadow-neumorphic-outset bg-background border-transparent">
           <DialogHeader>
             <DialogTitle>Create a New Budget</DialogTitle>
             <DialogDescription>
@@ -542,7 +542,7 @@ export default function FinancePage() {
 
       {/* Expense Dialog */}
       <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
-        <DialogContent className="shadow-neumorphic-outset bg-background border-transparent">
+        <DialogContent open={isExpenseDialogOpen} className="shadow-neumorphic-outset bg-background border-transparent">
           <DialogHeader>
             <DialogTitle>Add a New Expense</DialogTitle>
             <DialogDescription>

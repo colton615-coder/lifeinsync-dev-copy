@@ -179,7 +179,7 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
       </div>
       
        <Dialog open={isPauseModalOpen} onOpenChange={(open) => !open && handleResume()}>
-        <DialogContent className="shadow-neumorphic-outset bg-background border-transparent" hideCloseButton>
+        <DialogContent open={isPauseModalOpen} className="shadow-neumorphic-outset bg-background border-transparent" hideCloseButton>
           <DialogHeader className="items-center text-center"><DialogTitle className="text-2xl">Workout Paused</DialogTitle><DialogDescription>Take a breather. Ready to get back to it?</DialogDescription></DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
             <Button onClick={handleResume} className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground"><PlayCircle className="mr-2 h-4 w-4" />Resume Workout</Button>
