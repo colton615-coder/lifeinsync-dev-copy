@@ -36,10 +36,10 @@ const sheetVariants = cva(
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b",
-        bottom: "inset-x-0 bottom-0 border-t",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
-        right: "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
+        top: "inset-x-0 top-0 border-b pt-[max(24px,env(safe-area-inset-top))]",
+        bottom: "inset-x-0 bottom-0 border-t pb-[max(24px,env(safe-area-inset-bottom))]",
+        left: "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm pl-[max(24px,env(safe-area-inset-left))]",
+        right: "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm pr-[max(24px,env(safe-area-inset-right))]",
       },
     },
     defaultVariants: {
