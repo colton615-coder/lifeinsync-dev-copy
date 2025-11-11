@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { KeyRound, ShieldAlert } from 'lucide-react';
+import { KeyRound } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { PinInputGrid } from './PinInputGrid';
+import { PinButton } from './PinButton';
+import { Button } from '@/components/ui/button';
 
 interface PinGateProps {
   children: React.ReactNode;
@@ -99,9 +100,8 @@ export function PinGate({ children }: PinGateProps) {
   
   const handleForgotPin = async () => {
     try {
-      localStorage.clear(); // Clear all localStorage data
+      localStorage.clear();
       const authModule = await import('firebase/auth');
-      // Use getAuth and signOut from firebase/auth
       const { getAuth, signOut } = authModule as any;
       const auth = getAuth();
       await signOut(auth);
@@ -111,33 +111,14 @@ export function PinGate({ children }: PinGateProps) {
     }
   };
 
-
   if (isAuthenticated) {
     return <>{children}</>;
   }
-
-  const PinInputGrid = ({ value, onChange, onKeyDown }: { value: string[], onChange: (i:number, v:string)=>void, onKeyDown: (i:number, e: React.KeyboardEvent<HTMLInputElement>)=>void }) => (
-    <div className="flex justify-center gap-4">
-      {value.map((digit, index) => (
-        <Input
-          key={index}
-          ref={(el) => { inputRefs.current[index] = el }}
-          type="password"
-          maxLength={1}
-          value={digit}
-          onChange={(e) => onChange(index, e.target.value)}
-          onKeyDown={(e) => onKeyDown(index, e)}
-          className="w-14 h-16 text-center text-3xl font-bold shadow-neumorphic-inset"
-        />
-      ))}
-    </div>
-  );
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
       <Card className="w-full max-w-md shadow-neumorphic-outset">
         {!isPinSet ? (
-          // Create PIN View
           <>
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
@@ -151,39 +132,32 @@ export function PinGate({ children }: PinGateProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isConfirming ? (
-                 <PinInputGrid value={confirmPin} onChange={handlePinChange} onKeyDown={handleKeyDown} />
-              ): (
-                 <PinInputGrid value={pin} onChange={handlePinChange} onKeyDown={handleKeyDown} />
-              )}
+              <PinInputGrid value={isConfirming ? confirmPin : pin} onChange={handlePinChange} onKeyDown={handleKeyDown} inputRefs={inputRefs} />
               {error && <Alert variant="destructive" className="mt-4"><AlertDescription>{error}</AlertDescription></Alert>}
             </CardContent>
             <CardFooter>
               {isConfirming ? (
-                <Button
+                <PinButton
                   onClick={handleConfirmPin}
                   aria-label="Confirm PIN"
                   tabIndex={0}
-                  className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset focus:outline focus:outline-2 focus:outline-accent"
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleConfirmPin(); }}
                 >
                   Confirm PIN
-                </Button>
+                </PinButton>
               ) : (
-                <Button
+                <PinButton
                   onClick={handleCreatePin}
                   aria-label="Create PIN"
                   tabIndex={0}
-                  className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset focus:outline focus:outline-2 focus:outline-accent"
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleCreatePin(); }}
                 >
                   Create PIN
-                </Button>
+                </PinButton>
               )}
             </CardFooter>
           </>
         ) : (
-          // Enter PIN View
           <>
             <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
@@ -195,7 +169,7 @@ export function PinGate({ children }: PinGateProps) {
               <CardDescription>Enter your 4-digit PIN to access the Secure Vault.</CardDescription>
             </CardHeader>
             <CardContent>
-              <PinInputGrid value={pin} onChange={handlePinChange} onKeyDown={handleKeyDown} />
+              <PinInputGrid value={pin} onChange={handlePinChange} onKeyDown={handleKeyDown} inputRefs={inputRefs} />
               {error && <Alert variant="destructive" className="mt-4"><AlertDescription>{error}</AlertDescription></Alert>}
             </CardContent>
             <CardFooter className="flex justify-center">

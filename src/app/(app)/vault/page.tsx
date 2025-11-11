@@ -1,4 +1,4 @@
-import { PinGate } from './PinGate';
+import { PinGate } from '@/components/auth/PinGate';
 import { JournalVault } from './JournalVault';
 
 export default function VaultPage() {
