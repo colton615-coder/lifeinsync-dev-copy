@@ -42,10 +42,6 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6">
       <PullToRefreshIndicator {...pullToRefresh} />
       <NetworkStatusIndicator onRetry={handleRefresh} />
-      <header>
-        <h1 className="text-4xl font-bold font-headline text-foreground">Welcome to LiFE-iN-SYNC</h1>
-        <p className="text-muted-foreground mt-2">Your personalized life management dashboard.</p>
-      </header>
 
       <QuickStats key={`stats-${refreshKey}`} />
       
