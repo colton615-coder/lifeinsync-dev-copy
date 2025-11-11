@@ -462,15 +462,9 @@ export default function HabitsPage() {
     <div className="flex flex-col gap-6">
       <PullToRefreshIndicator {...pullToRefresh} />
       <NetworkStatusIndicator onRetry={handleRefresh} />
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-bold font-headline text-foreground">Habit Tracker</h1>
-          <p className="text-muted-foreground mt-2">Log your daily habits and watch your streaks grow.</p>
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="shadow-neumorphic-outset active:shadow-neumorphic-inset hover:shadow-glow-orange hover:scale-105 bg-primary/80 hover:bg-primary text-primary-foreground transition-all duration-300">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Habit
-        </Button>
+      <header>
+        <h1 className="text-4xl font-bold font-headline text-foreground">Habit Tracker</h1>
+        <p className="text-muted-foreground mt-2">Log your daily habits and watch your streaks grow.</p>
       </header>
       <Card className="shadow-neumorphic-outset">
         <CardHeader>
@@ -482,6 +476,22 @@ export default function HabitsPage() {
           ) : ( <p className="text-foreground font-medium italic">"{feedback}"</p> )}
         </CardContent>
       </Card>
+      
+      <Card className="shadow-neumorphic-outset">
+        <CardHeader>
+          <CardTitle>Add New Habit</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            onClick={() => setIsDialogOpen(true)} 
+            className="w-full shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create New Habit
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-neumorphic-outset">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Target className="text-accent" />Today's Habits</CardTitle>
