@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, CheckCircle2, Circle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CircularProgress } from '@/components/ui/circular-progress';
 import Link from 'next/link';
 
 type Habit = {
@@ -98,17 +99,20 @@ export function TodayOverview() {
         <Link href="/habits" className="block group">
           <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset hover:shadow-glow-green hover:scale-[1.02] transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="flex items-center gap-3 relative z-10">
-              <CheckCircle2 className="text-green-400 group-hover:scale-110 transition-transform duration-300" size={24} />
+            <div className="flex items-center gap-4 relative z-10">
+              <CircularProgress 
+                value={habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}
+                size={60}
+                strokeWidth={6}
+                color="rgb(74, 222, 128)"
+                label={`${habitStats.completed}/${habitStats.total}`}
+              />
               <div>
                 <p className="font-semibold text-foreground">Habits</p>
                 <p className="text-sm text-muted-foreground">
-                  {habitStats.completed} of {habitStats.total} completed
+                  {habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}% complete today
                 </p>
               </div>
-            </div>
-            <div className="text-2xl font-bold text-accent relative z-10 group-hover:scale-110 transition-transform duration-300">
-              {habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}%
             </div>
           </div>
         </Link>

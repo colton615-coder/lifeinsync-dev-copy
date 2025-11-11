@@ -41,6 +41,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyStateCTA } from '@/components/ui/empty-state-cta';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
+import { celebrateHabitCompletion, celebrateStreak, celebrateAllHabitsComplete } from '@/lib/celebrations';
 
 
 const { Flame, Target, PlusCircle, Trash2, Loader2, BrainCircuit, BookOpen, GlassWater, Dumbbell, Bed, Apple, DollarSign, ClipboardCheck, Sparkles, Wand2 } = LucideIcons;
@@ -334,8 +335,19 @@ export default function HabitsPage() {
       const lastCompletedDate = habit.lastCompleted?.toDate();
       if (!lastCompletedDate || !isToday(lastCompletedDate)) {
         newStreak = newStreak + 1;
+        // Celebrate streak increase
+        celebrateStreak(newStreak);
+      } else {
+        // Simple celebration for checking habit
+        celebrateHabitCompletion();
       }
       setDocumentNonBlocking(habitRef, { streak: newStreak, lastCompleted: serverTimestamp() }, { merge: true });
+      
+      // Check if all habits are now complete
+      const allComplete = combinedHabits?.every((h: Habit & {done: boolean}) => h.id === habit.id ? true : h.done);
+      if (allComplete && combinedHabits && combinedHabits.length > 1) {
+        setTimeout(() => celebrateAllHabitsComplete(), 300);
+      }
     } else {
       const lastCompletedDate = habit.lastCompleted?.toDate();
       if(lastCompletedDate && isToday(lastCompletedDate)) {
@@ -422,7 +434,7 @@ export default function HabitsPage() {
           <h1 className="text-4xl font-bold font-headline text-foreground">Habit Tracker</h1>
           <p className="text-muted-foreground mt-2">Log your daily habits and watch your streaks grow.</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground">
+        <Button onClick={() => setIsDialogOpen(true)} className="shadow-neumorphic-outset active:shadow-neumorphic-inset hover:shadow-glow-orange hover:scale-105 bg-primary/80 hover:bg-primary text-primary-foreground transition-all duration-300">
           <PlusCircle className="mr-2 h-4 w-4" />
           Add New Habit
         </Button>
@@ -484,9 +496,12 @@ export default function HabitsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-accent">
-                        <Flame className="h-5 w-5" />
-                        <span className="font-semibold text-lg">{habit.streak}</span>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+                        <Flame className={cn(
+                          "h-5 w-5 text-orange-400",
+                          habit.streak > 0 && "animate-pulse-glow"
+                        )} />
+                        <span className="font-semibold text-lg text-orange-400">{habit.streak}</span>
                       </div>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteHabit(habit)}>
                         <Trash2 size={16}/>

@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { EmptyStateCTA } from '@/components/ui/empty-state-cta';
+import { celebrateTaskComplete } from '@/lib/celebrations';
 
 type Priority = 'Low' | 'Medium' | 'High';
 
@@ -112,7 +113,13 @@ export default function TasksPage() {
   const toggleTask = (task: Task) => {
     if (!tasksCollection) return;
     const docRef = doc(tasksCollection, task.id);
-    updateDocumentNonBlocking(docRef, { completed: !task.completed });
+    const newCompletedState = !task.completed;
+    updateDocumentNonBlocking(docRef, { completed: newCompletedState });
+    
+    // Celebrate when completing a task
+    if (newCompletedState) {
+      celebrateTaskComplete();
+    }
   };
   
   const deleteTask = (taskToDelete: Task) => {

@@ -269,11 +269,11 @@ export default function FinancePage() {
           <p className="text-muted-foreground mt-2">Your AI-powered financial dashboard.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-           <Button onClick={() => setIsBudgetDialogOpen(true)} className="flex-1 md:flex-none shadow-neumorphic-outset active:shadow-neumorphic-inset bg-primary/80 hover:bg-primary text-primary-foreground">
+           <Button onClick={() => setIsBudgetDialogOpen(true)} className="flex-1 md:flex-none shadow-neumorphic-outset active:shadow-neumorphic-inset hover:shadow-glow-green hover:scale-105 bg-primary/80 hover:bg-primary text-primary-foreground transition-all duration-300">
              <PlusCircle className="mr-2 h-4 w-4" />
              New Budget
            </Button>
-            <Button onClick={() => setIsExpenseDialogOpen(true)} className="flex-1 md:flex-none shadow-neumorphic-outset active:shadow-neumorphic-inset bg-accent/20 hover:bg-accent/30 text-accent-foreground" disabled={!budgets || budgets.length === 0}>
+            <Button onClick={() => setIsExpenseDialogOpen(true)} className="flex-1 md:flex-none shadow-neumorphic-outset active:shadow-neumorphic-inset hover:shadow-glow-purple hover:scale-105 bg-accent/20 hover:bg-accent/30 text-accent-foreground transition-all duration-300" disabled={!budgets || budgets.length === 0}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Expense
             </Button>
