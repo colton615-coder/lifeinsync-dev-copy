@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useSidebarStore } from '@/lib/stores/useSidebarStore';
 import { Bot, Menu } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 /**
  * Header Component
@@ -36,7 +37,7 @@ export function Header() {
         </div>
         <h1 className="text-lg font-bold font-headline text-accent">LiFE-iN-SYNC</h1>
       </div>
-      <div className="w-9" />
+      <ThemeToggle />
     </header>
   );
 }
