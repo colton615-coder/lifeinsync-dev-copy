@@ -1,10 +1,12 @@
 'use client';
-import { useState, useMemo, FormEvent } from 'react';
+import { useState, useMemo, FormEvent, useCallback } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { haptics } from '@/lib/haptics';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -43,6 +45,18 @@ export default function TasksPage() {
   const { toast } = useToast();
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newPriority, setNewPriority] = useState<Priority>('Medium');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshKey(prev => prev + 1);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }, []);
+
+  const pullToRefresh = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    enabled: true,
+  });
 
   const tasksCollection = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -217,6 +231,7 @@ export default function TasksPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <PullToRefreshIndicator {...pullToRefresh} />
       <header>
         <h1 className="text-4xl font-bold font-headline text-foreground">Tasks</h1>
         <p className="text-muted-foreground mt-2">Log daily objectives and set priorities.</p>
@@ -240,6 +255,7 @@ export default function TasksPage() {
                     onChange={(e) => setNewTaskDescription(e.target.value)}
                     placeholder="What needs to be done?"
                     className="flex-grow"
+                    enterKeyHint="done"
                     />
                     <Select onValueChange={(value: Priority) => setNewPriority(value)} defaultValue={newPriority}>
                     <SelectTrigger className="w-full sm:w-[180px]">
@@ -283,6 +299,7 @@ export default function TasksPage() {
                 ctaElement={
                     <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-lg mx-auto">
                         <Input
+                        enterKeyHint="done"
                         value={newTaskDescription}
                         onChange={(e) => setNewTaskDescription(e.target.value)}
                         placeholder="e.g., Finish Q2 report"

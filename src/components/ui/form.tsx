@@ -14,6 +14,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
+import { haptics } from "@/lib/haptics"
 
 const Form = FormProvider
 
@@ -149,6 +150,13 @@ const FormMessage = React.forwardRef<
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : children
 
+  // Trigger haptic feedback when error message appears
+  React.useEffect(() => {
+    if (error) {
+      haptics.error()
+    }
+  }, [error])
+
   if (!body) {
     return null
   }
@@ -158,6 +166,8 @@ const FormMessage = React.forwardRef<
       ref={ref}
       id={formMessageId}
       className={cn("text-sm font-medium text-destructive", className)}
+      role="alert"
+      aria-live="polite"
       {...props}
     >
       {body}

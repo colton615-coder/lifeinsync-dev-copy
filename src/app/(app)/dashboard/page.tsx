@@ -1,10 +1,13 @@
 'use client';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { navLinks } from '@/lib/nav-links';
 import { TodayOverview } from '@/components/dashboard/TodayOverview';
 import { QuickStats } from '@/components/dashboard/QuickStats';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
 
 const featureDescriptions: Record<string, string> = {
   "/habits": "Log daily habits and build streaks.",
@@ -19,18 +22,33 @@ const featureDescriptions: Record<string, string> = {
 
 export default function DashboardPage() {
   const features = navLinks.filter(link => link.href !== '/dashboard');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = useCallback(async () => {
+    // Trigger re-render by updating key
+    setRefreshKey(prev => prev + 1);
+    // Wait for data to refresh (simulate API call)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }, []);
+
+  const pullToRefresh = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    enabled: true,
+  });
 
   return (
     <div className="flex flex-col gap-8">
+      <PullToRefreshIndicator {...pullToRefresh} />
       <header>
         <h1 className="text-4xl font-bold font-headline text-foreground">Welcome to LiFE-iN-SYNC</h1>
         <p className="text-muted-foreground mt-2">Your personalized life management dashboard.</p>
       </header>
 
-      <QuickStats />
+      <QuickStats key={`stats-${refreshKey}`} />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TodayOverview />
+        <TodayOverview key={`overview-${refreshKey}`} />
         <QuickActions />
       </div>
 

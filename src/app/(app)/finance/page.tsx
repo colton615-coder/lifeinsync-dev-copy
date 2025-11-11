@@ -1,11 +1,13 @@
 'use client';
-import { useState, useMemo, useTransition, FormEvent } from 'react';
+import { useState, useMemo, useTransition, FormEvent, useCallback } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, doc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { getBudgetSuggestions } from './actions';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -75,6 +77,18 @@ export default function FinancePage() {
   // Dialog states
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isBudgetDialogOpen, setIsBudgetDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshKey(prev => prev + 1);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }, []);
+
+  const pullToRefresh = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    enabled: true,
+  });
 
   // Budget form states
   const [newBudgetName, setNewBudgetName] = useState('');
@@ -263,6 +277,7 @@ export default function FinancePage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <PullToRefreshIndicator {...pullToRefresh} />
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold font-headline text-foreground">Finance</h1>
@@ -476,6 +491,7 @@ export default function FinancePage() {
                   placeholder="e.g., Monthly Groceries" 
                   disabled={isSavingBudget}
                   required
+                  enterKeyHint="next"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -489,7 +505,8 @@ export default function FinancePage() {
                   className="col-span-3" 
                   placeholder="e.g., 500" 
                   disabled={isSavingBudget}
-                  required 
+                  required
+                  enterKeyHint="next"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -582,7 +599,8 @@ export default function FinancePage() {
                   onChange={(e) => setNewExpenseDescription(e.target.value)} 
                   className="col-span-3" 
                   placeholder="e.g., Coffee shop" 
-                  required 
+                  required
+                  enterKeyHint="next"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -595,7 +613,8 @@ export default function FinancePage() {
                   onChange={(e) => setNewExpenseAmount(e.target.value)} 
                   className="col-span-3" 
                   placeholder="e.g., 5.50" 
-                  required 
+                  required
+                  enterKeyHint="done"
                 />
               </div>
             </div>

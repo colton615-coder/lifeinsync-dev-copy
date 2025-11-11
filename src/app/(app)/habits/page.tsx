@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useTransition, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useTransition, useMemo, useRef, useCallback } from 'react';
 import {
   useUser,
   useFirestore,
@@ -18,6 +18,8 @@ import { useDebouncedCallback } from 'use-debounce';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { haptics } from '@/lib/haptics';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
 
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -104,9 +106,21 @@ export default function HabitsPage() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [feedback, setFeedback] = useState('Analyzing your weekly performance...');
   const [isAnalyzing, startTransition] = useTransition();
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshKey(prev => prev + 1);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }, []);
+
+  const pullToRefresh = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    enabled: true,
+  });
 
   // State for AI suggestions
   const [proactiveSuggestions, setProactiveSuggestions] = useState<HabitSuggestion[]>([]);
@@ -445,6 +459,7 @@ export default function HabitsPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <PullToRefreshIndicator {...pullToRefresh} />
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold font-headline text-foreground">Habit Tracker</h1>
@@ -579,6 +594,7 @@ export default function HabitsPage() {
                     autoCapitalize="on"
                     spellCheck="true"
                     autoCorrect="on"
+                    enterKeyHint="done"
                   />
                 )}
               />
