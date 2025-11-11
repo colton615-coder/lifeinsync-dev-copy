@@ -86,12 +86,13 @@ export function QuickStats() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
       <Link href="/finance">
-        <Card className="shadow-neumorphic-outset hover:shadow-neumorphic-inset transition-shadow cursor-pointer">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="relative overflow-hidden shadow-neumorphic-outset hover:shadow-glow-green hover:scale-105 transition-all duration-300 cursor-pointer group">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-green-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
             <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
-            <DollarSign className="text-green-400" size={20} />
+            <DollarSign className="text-green-400 group-hover:scale-110 transition-transform duration-300" size={20} />
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-foreground">${monthlySpend.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               of ${totalBudget.toFixed(2)} budget
@@ -101,12 +102,13 @@ export function QuickStats() {
       </Link>
 
       <Link href="/habits">
-        <Card className="shadow-neumorphic-outset hover:shadow-neumorphic-inset transition-shadow cursor-pointer">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="relative overflow-hidden shadow-neumorphic-outset hover:shadow-glow-orange hover:scale-105 transition-all duration-300 cursor-pointer group">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
             <CardTitle className="text-sm font-medium text-muted-foreground">Best Streak</CardTitle>
-            <Flame className="text-orange-400" size={20} />
+            <Flame className="text-orange-400 group-hover:scale-110 group-hover:animate-bounce-subtle transition-transform duration-300" size={20} />
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-foreground">{longestStreak} days</div>
             <p className="text-xs text-muted-foreground mt-1">
               Keep it going!
@@ -116,12 +118,13 @@ export function QuickStats() {
       </Link>
 
       <Link href="/workouts">
-        <Card className="shadow-neumorphic-outset hover:shadow-neumorphic-inset transition-shadow cursor-pointer">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="relative overflow-hidden shadow-neumorphic-outset hover:shadow-glow-blue hover:scale-105 transition-all duration-300 cursor-pointer group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
             <CardTitle className="text-sm font-medium text-muted-foreground">Your Stats</CardTitle>
-            <TrendingUp className="text-accent" size={20} />
+            <TrendingUp className="text-accent group-hover:scale-110 transition-transform duration-300" size={20} />
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-foreground">All Systems</div>
             <p className="text-xs text-muted-foreground mt-1">
               Go! 🚀

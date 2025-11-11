@@ -90,15 +90,16 @@ export function TodayOverview() {
     <Card className="shadow-neumorphic-outset">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="text-accent" />
+          <Target className="text-accent animate-pulse-glow" />
           Today's Progress
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Link href="/habits" className="block hover:opacity-80 transition-opacity">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="text-green-400" size={24} />
+        <Link href="/habits" className="block group">
+          <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset hover:shadow-glow-green hover:scale-[1.02] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="flex items-center gap-3 relative z-10">
+              <CheckCircle2 className="text-green-400 group-hover:scale-110 transition-transform duration-300" size={24} />
               <div>
                 <p className="font-semibold text-foreground">Habits</p>
                 <p className="text-sm text-muted-foreground">
@@ -106,16 +107,17 @@ export function TodayOverview() {
                 </p>
               </div>
             </div>
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold text-accent relative z-10 group-hover:scale-110 transition-transform duration-300">
               {habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}%
             </div>
           </div>
         </Link>
 
-        <Link href="/tasks" className="block hover:opacity-80 transition-opacity">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset">
-            <div className="flex items-center gap-3">
-              <Circle className="text-blue-400" size={24} />
+        <Link href="/tasks" className="block group">
+          <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset hover:shadow-glow-blue hover:scale-[1.02] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="flex items-center gap-3 relative z-10">
+              <Circle className="text-blue-400 group-hover:scale-110 transition-transform duration-300" size={24} />
               <div>
                 <p className="font-semibold text-foreground">Tasks</p>
                 <p className="text-sm text-muted-foreground">
@@ -123,7 +125,7 @@ export function TodayOverview() {
                 </p>
               </div>
             </div>
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold text-accent relative z-10 group-hover:scale-110 transition-transform duration-300">
               {taskStats.pending}
             </div>
           </div>
