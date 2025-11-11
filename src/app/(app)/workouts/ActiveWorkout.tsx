@@ -4,7 +4,7 @@ import type { WorkoutPlan, ClientExercise } from '@/ai/flows/workout-generator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PauseCircle, PlayCircle, SkipForward, XCircle, Info, Check, Trophy, Flame, Target, Wind } from 'lucide-react';
+import { PauseCircle, PlayCircle, SkipForward, XCircle, Info, Check, Trophy, Flame, Target, Wind, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ExerciseImage } from '@/components/ui/ExerciseImage';
@@ -48,7 +48,7 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
     }
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft((prev: number) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -101,10 +101,10 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
 
   const getCategoryColor = (category: string) => {
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('warm')) return { gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-500/20', text: 'text-orange-500', icon: Flame };
-    if (lowerCategory.includes('cool') || lowerCategory.includes('stretch')) return { gradient: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/20', text: 'text-blue-500', icon: Wind };
-    if (lowerCategory.includes('rest')) return { gradient: 'from-purple-500 to-purple-600', bg: 'bg-purple-500/20', text: 'text-purple-500', icon: Clock };
-    return { gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-500/20', text: 'text-green-500', icon: Target };
+    if (lowerCategory.includes('warm')) return { gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-500/20', text: 'text-orange-500', color: 'rgb(249, 115, 22)', icon: Flame };
+    if (lowerCategory.includes('cool') || lowerCategory.includes('stretch')) return { gradient: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/20', text: 'text-blue-500', color: 'rgb(59, 130, 246)', icon: Wind };
+    if (lowerCategory.includes('rest')) return { gradient: 'from-purple-500 to-purple-600', bg: 'bg-purple-500/20', text: 'text-purple-500', color: 'rgb(168, 85, 247)', icon: Clock };
+    return { gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-500/20', text: 'text-green-500', color: 'rgb(34, 197, 94)', icon: Target };
   };
 
   const categoryStyle = getCategoryColor(currentExercise.category);
@@ -160,14 +160,15 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
             className="flex items-center justify-center gap-2"
           >
             <div className="relative">
-              <CircularProgress 
-                value={workoutProgress} 
-                size={50} 
-                strokeWidth={4}
-                className={cn("bg-gradient-to-r", categoryStyle.gradient)}
-              >
-                <span className="text-xs font-bold">{currentExerciseIndex + 1}/{workout.exercises.length}</span>
-              </CircularProgress>
+              <div className="relative inline-flex items-center justify-center">
+                <CircularProgress 
+                  value={workoutProgress} 
+                  size={50} 
+                  strokeWidth={4}
+                  color={categoryStyle.color}
+                />
+                <span className="absolute text-xs font-bold">{currentExerciseIndex + 1}/{workout.exercises.length}</span>
+              </div>
             </div>
           </motion.div>
 
@@ -388,7 +389,7 @@ export function ActiveWorkout({ workout, onFinish }: ActiveWorkoutProps) {
                     <div>
                        <h3 className="font-semibold text-xl text-accent mb-3">Key Points</h3>
                        <ul className="space-y-3">
-                        {currentExercise.instructions.keyPoints.map((point, index) => (
+                        {currentExercise.instructions.keyPoints.map((point: string, index: number) => (
                             <li key={index} className="flex items-start gap-3">
                                 <div className="w-5 h-5 flex-shrink-0 rounded-full bg-accent/20 text-accent flex items-center justify-center mt-0.5">
                                     <Check size={14}/>
