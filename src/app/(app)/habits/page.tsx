@@ -362,32 +362,42 @@ export default function HabitsPage() {
   const handleHabitToggle = async (habit: Habit & {done: boolean}) => {
     if (!user || !firestore) return;
     
-    try {
-      const habitRef = doc(firestore, 'users', user.uid, 'habits', habit.id);
-      const logRef = doc(firestore, 'users', user.uid, 'habitLogs', todayStr);
-      const newDoneState = !habit.done;
-      let newStreak = habit.streak;
-      
-      // Store original state for rollback on failure
-      const originalDone = habit.done;
-      const originalStreak = habit.streak;
-      
-      // 1. OPTIMISTIC UPDATE: Update local state immediately for responsive UI
-      if (setHabits && combinedHabits) {
-        const updatedHabits = combinedHabits.map(h => 
-          h.id === habit.id 
-            ? { ...h, done: newDoneState, streak: newStreak } 
-            : h
-        );
-        setHabits(updatedHabits);
-      }
+    const habitRef = doc(firestore, 'users', user.uid, 'habits', habit.id);
+    const logRef = doc(firestore, 'users', user.uid, 'habitLogs', todayStr);
+    const newDoneState = !habit.done;
+    let newStreak = habit.streak;
+    
+    // Store original state for rollback on failure
+    const originalDone = habit.done;
+    const originalStreak = habit.streak;
+    
+    // 1. OPTIMISTIC UPDATE: Update local state immediately for responsive UI
+    if (setHabits && combinedHabits) {
+      const updatedHabits = combinedHabits.map(h => 
+        h.id === habit.id 
+          ? { ...h, done: newDoneState, streak: newStreak } 
+          : h
+      );
+      setHabits(updatedHabits);
+    }
 
+    try {
       if (newDoneState) {
         const lastCompletedDate = habit.lastCompleted?.toDate();
         
         // Calculate new streak
         if (!lastCompletedDate || !isToday(lastCompletedDate)) {
           newStreak = newStreak + 1;
+          
+          // Update optimistic UI with new streak
+          if (setHabits && combinedHabits) {
+            const updatedHabits = combinedHabits.map(h => 
+              h.id === habit.id 
+                ? { ...h, done: newDoneState, streak: newStreak } 
+                : h
+            );
+            setHabits(updatedHabits);
+          }
         }
 
         // 2. HAPTIC FEEDBACK: Wrapped in try-catch to prevent crash
@@ -414,14 +424,14 @@ export default function HabitsPage() {
           // Non-critical - don't crash app
         }
 
-        // 4. FIREBASE WRITES: Async with comprehensive error handling
+        // 4. FIREBASE WRITES: CRITICAL - Must await all async operations
         try {
           // Update completion log
           const logUpdate = { log: { [habit.id]: newDoneState } };
-          setDocumentNonBlocking(logRef, logUpdate, { merge: true });
+          await setDocumentNonBlocking(logRef, logUpdate, { merge: true });
           
           // Update habit with new streak and timestamp
-          setDocumentNonBlocking(habitRef, { 
+          await setDocumentNonBlocking(habitRef, { 
             streak: newStreak, 
             lastCompleted: serverTimestamp() 
           }, { merge: true });
@@ -445,7 +455,7 @@ export default function HabitsPage() {
             description: 'Could not save habit completion. Please try again.' 
           });
           
-          throw firebaseError;
+          return; // Exit early - error handled
         }
 
         // 5. ALL HABITS COMPLETE CHECK: Wrapped in try-catch
@@ -468,16 +478,26 @@ export default function HabitsPage() {
         }
       } else {
         // UNCHECKING A HABIT
-        try {
-          const lastCompletedDate = habit.lastCompleted?.toDate();
-          if (lastCompletedDate && isToday(lastCompletedDate)) {
-            newStreak = Math.max(0, newStreak - 1);
+        const lastCompletedDate = habit.lastCompleted?.toDate();
+        if (lastCompletedDate && isToday(lastCompletedDate)) {
+          newStreak = Math.max(0, newStreak - 1);
+          
+          // Update optimistic UI with reduced streak
+          if (setHabits && combinedHabits) {
+            const updatedHabits = combinedHabits.map(h => 
+              h.id === habit.id 
+                ? { ...h, done: newDoneState, streak: newStreak } 
+                : h
+            );
+            setHabits(updatedHabits);
           }
+        }
 
-          // Update completion log and streak
+        try {
+          // Update completion log and streak - MUST AWAIT
           const logUpdate = { log: { [habit.id]: newDoneState } };
-          setDocumentNonBlocking(logRef, logUpdate, { merge: true });
-          setDocumentNonBlocking(habitRef, { streak: newStreak }, { merge: true });
+          await setDocumentNonBlocking(logRef, logUpdate, { merge: true });
+          await setDocumentNonBlocking(habitRef, { streak: newStreak }, { merge: true });
         } catch (firebaseError) {
           console.error('❌ Firebase write error on habit unchecking:', firebaseError);
           
@@ -497,21 +517,29 @@ export default function HabitsPage() {
             description: 'Could not update habit. Please try again.' 
           });
           
-          throw firebaseError;
+          return; // Exit early - error handled
         }
       }
     } catch (error) {
       // FINAL CATCH-ALL: Prevent unhandled promise rejection from crashing app
       console.error('❌ Critical error in handleHabitToggle:', error);
       
-      // Show generic error if specific error wasn't already shown
-      if (!(error instanceof Error) || !error.message.includes('Sync')) {
-        toast({ 
-          variant: 'destructive', 
-          title: 'Error', 
-          description: 'An unexpected error occurred. Please try again.' 
-        });
+      // ROLLBACK: Restore original state on any unexpected error
+      if (setHabits && combinedHabits) {
+        const rollbackHabits = combinedHabits.map(h => 
+          h.id === habit.id 
+            ? { ...h, done: originalDone, streak: originalStreak } 
+            : h
+        );
+        setHabits(rollbackHabits);
       }
+      
+      // Show user-friendly error
+      toast({ 
+        variant: 'destructive', 
+        title: 'Error', 
+        description: 'An unexpected error occurred. Please try again.' 
+      });
       
       // DO NOT RE-THROW - prevents app crash on white screen
       // Error is logged for debugging, user is notified via toast
