@@ -8,8 +8,9 @@ const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     animate?: boolean
+    interactive?: boolean
   }
->(({ className, animate = true, ...props }, ref) => {
+>(({ className, animate = true, interactive = false, ...props }, ref) => {
   const Comp: any = animate ? MotionDiv : "div"
   
   return (
@@ -17,6 +18,7 @@ const Card = React.forwardRef<
       ref={ref}
       className={cn(
         "rounded-lg border bg-card text-card-foreground shadow-sm",
+        interactive && "cursor-pointer transition-all duration-200 hover:shadow-neumorphic-inset hover:scale-[1.01]",
         className
       )}
       initial={animate ? { opacity: 0, y: 20 } : undefined}
@@ -43,12 +45,17 @@ CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & {
+    size?: 'sm' | 'md' | 'lg'
+  }
+>(({ className, size = 'md', ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "font-semibold leading-none tracking-tight",
+      size === 'sm' && "text-lg",
+      size === 'md' && "text-xl",
+      size === 'lg' && "text-2xl",
       className
     )}
     {...props}

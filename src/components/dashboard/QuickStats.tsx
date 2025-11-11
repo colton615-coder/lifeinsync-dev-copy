@@ -86,11 +86,11 @@ export function QuickStats() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
       <Link href="/finance">
-        <Card className="relative overflow-hidden shadow-neumorphic-outset hover:shadow-glow-green hover:scale-105 transition-all duration-300 cursor-pointer group">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/25 via-green-400/15 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card interactive className="relative overflow-hidden shadow-neumorphic-outset group">
+          <div className="absolute inset-0 bg-gradient-to-br from-success/25 via-success/15 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
-            <DollarSign className="text-green-400 group-hover:scale-110 transition-transform duration-300" size={20} />
+            <CardTitle size="sm" className="font-medium text-muted-foreground">This Month</CardTitle>
+            <DollarSign className="text-success group-hover:scale-110 transition-transform duration-300" size={20} />
           </CardHeader>
           <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-foreground">${monthlySpend.toFixed(2)}</div>
@@ -102,11 +102,11 @@ export function QuickStats() {
       </Link>
 
       <Link href="/habits">
-        <Card className="relative overflow-hidden shadow-neumorphic-outset hover:shadow-glow-orange hover:scale-105 transition-all duration-300 cursor-pointer group">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/25 via-orange-400/15 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card interactive className="relative overflow-hidden shadow-neumorphic-outset group">
+          <div className="absolute inset-0 bg-gradient-to-br from-warning/25 via-warning/15 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Best Streak</CardTitle>
-            <Flame className="text-orange-400 group-hover:scale-110 group-hover:animate-bounce-subtle transition-transform duration-300" size={20} />
+            <CardTitle size="sm" className="font-medium text-muted-foreground">Best Streak</CardTitle>
+            <Flame className="text-warning group-hover:scale-110 group-hover:animate-bounce-subtle transition-transform duration-300" size={20} />
           </CardHeader>
           <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-foreground">{longestStreak} days</div>
@@ -118,11 +118,11 @@ export function QuickStats() {
       </Link>
 
       <Link href="/workouts">
-        <Card className="relative overflow-hidden shadow-neumorphic-outset hover:shadow-glow-blue hover:scale-105 transition-all duration-300 cursor-pointer group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/25 via-blue-400/15 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card interactive className="relative overflow-hidden shadow-neumorphic-outset group">
+          <div className="absolute inset-0 bg-gradient-to-br from-info/25 via-info/15 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Your Stats</CardTitle>
-            <TrendingUp className="text-accent group-hover:scale-110 transition-transform duration-300" size={20} />
+            <CardTitle size="sm" className="font-medium text-muted-foreground">Your Stats</CardTitle>
+            <TrendingUp className="text-info group-hover:scale-110 transition-transform duration-300" size={20} />
           </CardHeader>
           <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-foreground">All Systems</div>

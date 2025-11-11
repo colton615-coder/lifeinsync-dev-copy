@@ -259,7 +259,7 @@ export default function TasksPage() {
   );
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <PullToRefreshIndicator {...pullToRefresh} />
       <NetworkStatusIndicator onRetry={handleRefresh} />
       <header>

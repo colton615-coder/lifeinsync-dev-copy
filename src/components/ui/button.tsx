@@ -17,7 +17,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "underline-offset-4 hover:underline text-primary",
-        neumorphic: "shadow-neumorphic-outset hover:shadow-neumorphic-outset-lg active:shadow-neumorphic-inset bg-background"
+        neumorphic: "shadow-neumorphic-outset hover:shadow-neumorphic-outset-lg active:shadow-neumorphic-inset bg-background",
+        success: "bg-success text-success-foreground hover:bg-success/90",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90",
       },
       size: {
         default: "h-11 py-2 px-4 min-h-[44px]",
@@ -25,10 +27,19 @@ const buttonVariants = cva(
         lg: "h-12 px-8 rounded-md",
         icon: "h-11 w-11 min-h-[44px] min-w-[44px]",
       },
+      shadow: {
+        none: "",
+        neumorphic: "shadow-neumorphic-outset hover:shadow-neumorphic-inset",
+        glow: "hover:shadow-glow-purple",
+        "glow-green": "hover:shadow-glow-green hover:scale-105",
+        "glow-orange": "hover:shadow-glow-orange hover:scale-105",
+        "glow-blue": "hover:shadow-glow-blue hover:scale-105",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      shadow: "none",
     },
   }
 )

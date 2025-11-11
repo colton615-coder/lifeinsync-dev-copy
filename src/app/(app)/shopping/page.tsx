@@ -196,7 +196,7 @@ export default function ShoppingListPage() {
   );
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <header>
         <h1 className="text-4xl font-bold font-headline text-foreground">Shopping List</h1>
         <p className="text-muted-foreground mt-2">Track groceries and other essentials to restock.</p>

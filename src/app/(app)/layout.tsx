@@ -79,6 +79,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-accent focus:text-accent-foreground focus:rounded-md focus:top-4 focus:left-4"
+      >
+        Skip to main content
+      </a>
       <OnboardingFlow open={showOnboarding} onComplete={() => setShowOnboarding(false)} />
       <SidebarProvider>
       <Sidebar>
@@ -128,7 +134,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </SidebarTrigger>
         </header>
-        <main className="min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">{children}</main>
+        <main id="main-content" className="min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+          <div className="max-w-[1400px] mx-auto">
+            {children}
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
     </>
