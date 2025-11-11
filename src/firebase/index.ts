@@ -3,7 +3,7 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -38,10 +38,29 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  const firestore = getFirestore(firebaseApp);
+  
+  // Enable offline persistence for PWA functionality
+  if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(firestore, {
+      synchronizeTabs: true, // Allow multiple tabs to share cache
+    }).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        // Multiple tabs open, persistence can only be enabled in one tab at a time
+        console.warn('Offline persistence failed: Multiple tabs open. Using memory cache.');
+      } else if (err.code === 'unimplemented') {
+        // Browser doesn't support persistence
+        console.warn('Offline persistence not supported in this browser.');
+      } else {
+        console.error('Error enabling offline persistence:', err);
+      }
+    });
+  }
+  
   return {
     firebaseApp,
     auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
+    firestore
   };
 }
 

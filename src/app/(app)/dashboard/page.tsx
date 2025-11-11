@@ -8,6 +8,7 @@ import { QuickStats } from '@/components/dashboard/QuickStats';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
+import { NetworkStatusIndicator } from '@/components/ui/network-status-indicator';
 
 const featureDescriptions: Record<string, string> = {
   "/habits": "Log daily habits and build streaks.",
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <PullToRefreshIndicator {...pullToRefresh} />
+      <NetworkStatusIndicator onRetry={handleRefresh} />
       <header>
         <h1 className="text-4xl font-bold font-headline text-foreground">Welcome to LiFE-iN-SYNC</h1>
         <p className="text-muted-foreground mt-2">Your personalized life management dashboard.</p>

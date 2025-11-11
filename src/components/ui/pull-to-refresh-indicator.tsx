@@ -9,7 +9,7 @@ interface PullToRefreshIndicatorProps {
   threshold: number;
   isRefreshing: boolean;
   isPulling: boolean;
-  shouldReduceMotion: boolean;
+  shouldReduceMotion: boolean | null;
 }
 
 export function PullToRefreshIndicator({

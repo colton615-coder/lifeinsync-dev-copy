@@ -20,6 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { haptics } from '@/lib/haptics';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
+import { NetworkStatusIndicator } from '@/components/ui/network-status-indicator';
 
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -460,6 +461,7 @@ export default function HabitsPage() {
   return (
     <div className="flex flex-col gap-8">
       <PullToRefreshIndicator {...pullToRefresh} />
+      <NetworkStatusIndicator onRetry={handleRefresh} />
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold font-headline text-foreground">Habit Tracker</h1>

@@ -8,6 +8,7 @@ import { getBudgetSuggestions } from './actions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
+import { NetworkStatusIndicator } from '@/components/ui/network-status-indicator';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -278,6 +279,7 @@ export default function FinancePage() {
   return (
     <div className="flex flex-col gap-8">
       <PullToRefreshIndicator {...pullToRefresh} />
+      <NetworkStatusIndicator onRetry={handleRefresh} />
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold font-headline text-foreground">Finance</h1>

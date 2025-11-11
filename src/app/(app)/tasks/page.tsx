@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { haptics } from '@/lib/haptics';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh-indicator';
+import { NetworkStatusIndicator } from '@/components/ui/network-status-indicator';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -232,6 +233,7 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col gap-8">
       <PullToRefreshIndicator {...pullToRefresh} />
+      <NetworkStatusIndicator onRetry={handleRefresh} />
       <header>
         <h1 className="text-4xl font-bold font-headline text-foreground">Tasks</h1>
         <p className="text-muted-foreground mt-2">Log daily objectives and set priorities.</p>
