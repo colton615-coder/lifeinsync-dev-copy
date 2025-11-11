@@ -97,8 +97,8 @@ export function TodayOverview() {
       </CardHeader>
       <CardContent className="space-y-4">
         <Link href="/habits" className="block group">
-          <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset hover:shadow-glow-green hover:scale-[1.02] transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-green hover:shadow-glow-green hover:scale-[1.02] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-green-400/10 to-transparent opacity-30 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="flex items-center gap-4 relative z-10">
               <CircularProgress 
                 value={habitStats.total > 0 ? Math.round((habitStats.completed / habitStats.total) * 100) : 0}
@@ -118,8 +118,8 @@ export function TodayOverview() {
         </Link>
 
         <Link href="/tasks" className="block group">
-          <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-inset hover:shadow-glow-blue hover:scale-[1.02] transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative overflow-hidden flex items-center justify-between p-4 rounded-lg bg-background shadow-neumorphic-blue hover:shadow-glow-blue hover:scale-[1.02] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-blue-400/10 to-transparent opacity-30 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="flex items-center gap-3 relative z-10">
               <Circle className="text-blue-400 group-hover:scale-110 transition-transform duration-300" size={24} />
               <div>

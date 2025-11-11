@@ -20,8 +20,8 @@ export function QuickActions() {
           </Link>
           
           <Link href="/ai-knox">
-            <Button variant="outline" className="relative w-full h-20 flex flex-col gap-2 shadow-neumorphic-outset hover:shadow-glow-purple hover:scale-105 transition-all duration-300 group overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 bg-[length:200%_100%] opacity-0 group-hover:opacity-100 group-hover:animate-gradient transition-opacity" />
+            <Button variant="outline" className="relative w-full h-20 flex flex-col gap-2 shadow-neumorphic-purple hover:shadow-glow-purple hover:scale-105 transition-all duration-300 group overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-pink-500/20 to-purple-500/25 bg-[length:200%_100%] opacity-50 group-hover:opacity-100 group-hover:animate-gradient transition-opacity" />
               <Sparkles size={20} className="relative z-10 group-hover:scale-110 transition-transform duration-300" />
               <span className="text-xs relative z-10">AI Knox</span>
             </Button>

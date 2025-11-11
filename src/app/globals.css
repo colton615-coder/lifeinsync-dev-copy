@@ -32,24 +32,24 @@
   }
  
   .dark {
-    --background: 0 0% 13%;
+    --background: 260 15% 13%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 13%;
+    --card: 260 12% 15%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;
+    --popover: 260 15% 10%;
     --popover-foreground: 0 0% 98%;
     --primary: 345 100% 25%;
     --primary-foreground: 345 15% 95%;
-    --secondary: 0 0% 20%;
+    --secondary: 260 10% 20%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 20%;
+    --muted: 260 10% 20%;
     --muted-foreground: 0 0% 60%;
     --accent: 276 100% 84.5%;
     --accent-foreground: 276 25% 15%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 18%;
-    --input: 0 0% 13%;
+    --border: 260 8% 22%;
+    --input: 260 12% 16%;
     --ring: 276 80% 75%;
     --chart-1: 345 100% 25%;
     --chart-2: 276 100% 84.5%;
@@ -74,9 +74,10 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 40% 90%, rgba(249, 115, 22, 0.02) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 40% 90%, rgba(249, 115, 22, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 60% 20%, rgba(34, 197, 94, 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
     animation: float 20s ease-in-out infinite;
