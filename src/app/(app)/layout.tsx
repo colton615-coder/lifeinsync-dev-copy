@@ -14,16 +14,19 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { navLinks } from '@/lib/nav-links';
-import { Bot, Loader2 } from 'lucide-react';
+import { useSidebarStore } from '@/lib/stores/useSidebarStore';
+import { Bot, Loader2, Menu } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
+import { Button } from '@/components/ui/button';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const { isOpen, toggle } = useSidebarStore();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
@@ -125,14 +128,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b border-border px-4 md:hidden">
-            <SidebarTrigger asChild>
-                <div className="flex items-center gap-2 cursor-pointer">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 text-primary shadow-neumorphic-outset">
-                        <Bot className="h-5 w-5 text-accent" />
-                    </div>
-                    <h1 className="text-lg font-bold font-headline text-accent">LiFE-iN-SYNC</h1>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={toggle}
+              className="shadow-neumorphic-outset active:shadow-neumorphic-inset"
+              aria-label="Toggle sidebar menu"
+            >
+              <Menu className="h-6 w-6 text-foreground" />
+            </Button>
+            <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 text-primary shadow-neumorphic-outset">
+                    <Bot className="h-5 w-5 text-accent" />
                 </div>
-            </SidebarTrigger>
+                <h1 className="text-lg font-bold font-headline text-accent">LiFE-iN-SYNC</h1>
+            </div>
+            <div className="w-9" />
         </header>
         <main id="main-content" className="min-h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
           <div className="max-w-[1400px] mx-auto">
